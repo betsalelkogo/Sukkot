@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+  <rect width="600" height="800" fill="#f0e8da"/>
+  <rect x="190" y="30" width="220" height="18" rx="4" fill="#c9a06a"/>
+  <rect x="210" y="60" width="180" height="700" fill="#f8f3ea"/>
+  <rect x="292" y="180" width="16" height="260" rx="8" fill="#6b8f3a"/>
+  <ellipse cx="250" cy="300" rx="22" ry="70" fill="#3d8a4a"/>
+  <ellipse cx="350" cy="300" rx="18" ry="58" fill="#2f6b3a"/>
+  <ellipse cx="300" cy="430" rx="28" ry="36" fill="#e0b33a"/>
+  <text x="300" y="610" text-anchor="middle" font-size="28" fill="#2a8f8c" font-family="Arial">мемб еаъшев</text>
+</svg>

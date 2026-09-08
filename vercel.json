@@ -1,0 +1,10 @@
+{
+  "installCommand": "npm install --registry=https://registry.npmjs.org/ --no-fund --no-audit",
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/expire-reservations",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}

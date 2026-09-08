@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+  <rect width="600" height="800" fill="#f3ece1"/>
+  <rect x="190" y="30" width="220" height="18" rx="4" fill="#c9a06a"/>
+  <rect x="210" y="60" width="180" height="700" fill="#f8f2e8"/>
+  <circle cx="300" cy="260" r="90" fill="#c43b4b"/>
+  <circle cx="230" cy="360" r="48" fill="#9b2335"/>
+  <circle cx="370" cy="380" r="40" fill="#b32238"/>
+  <path d="M210 170c60 30 120 30 180 0" fill="none" stroke="#2f6b3a" stroke-width="12"/>
+  <path d="M240 140c20 30 80 30 110 0" fill="none" stroke="#3d8a4a" stroke-width="9"/>
+  <text x="300" y="620" text-anchor="middle" font-size="36" fill="#2a8f8c" font-family="Arial">щщеп евйм</text>
+</svg>

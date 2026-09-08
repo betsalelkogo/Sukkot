@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 620" role="img" aria-label="чйщеий селд ъмеййн">
+  <rect width="1400" height="620" fill="#efe8dc"/>
+  <g transform="translate(170,30)">
+    <line x1="140" y1="0" x2="140" y2="36" stroke="#6b4f2a" stroke-width="3"/>
+    <rect x="40" y="36" width="200" height="16" rx="3" fill="#c9a06a"/>
+    <rect x="52" y="58" width="176" height="500" fill="#f7f1e6"/>
+    <path d="M70 210c40-70 140-70 180 0 10 90-40 190-90 250-50-60-100-160-90-250z" fill="#c43b4b" opacity=".9"/>
+    <circle cx="140" cy="230" r="46" fill="#9b2335"/>
+    <path d="M120 90c20 20 40 20 60 0" fill="none" stroke="#2f6b3a" stroke-width="8"/>
+    <path d="M90 140c30 10 70 10 100 0" fill="none" stroke="#3d8a4a" stroke-width="7"/>
+    <text x="140" y="430" text-anchor="middle" font-size="28" fill="#2a8f8c" font-family="Arial">щщеп евйм</text>
+  </g>
+  <g transform="translate(560,10)">
+    <line x1="150" y1="0" x2="150" y2="30" stroke="#6b4f2a" stroke-width="3"/>
+    <rect x="50" y="30" width="200" height="16" rx="3" fill="#c9a06a"/>
+    <rect x="62" y="52" width="176" height="540" fill="#f4eee3"/>
+    <path d="M90 180c50-80 160-70 190 20-10 100-50 200-100 260-60-70-110-160-90-280z" fill="#b32238"/>
+    <circle cx="160" cy="210" r="50" fill="#8b1d2c"/>
+    <path d="M100 120c40 18 80 18 120 0" fill="none" stroke="#2f6b3a" stroke-width="9"/>
+    <text x="150" y="450" text-anchor="middle" font-size="26" fill="#1f6f6d" font-family="Arial">ещозъ бзвк</text>
+  </g>
+  <g transform="translate(960,40)">
+    <line x1="130" y1="0" x2="130" y2="32" stroke="#6b4f2a" stroke-width="3"/>
+    <rect x="30" y="32" width="200" height="16" rx="3" fill="#c9a06a"/>
+    <rect x="42" y="54" width="176" height="500" fill="#f8f3ea"/>
+    <circle cx="130" cy="220" r="52" fill="#c43b4b"/>
+    <circle cx="88" cy="270" r="28" fill="#9b2335"/>
+    <circle cx="176" cy="280" r="24" fill="#a82c3d"/>
+    <path d="M70 140c40 20 90 20 130 0" fill="none" stroke="#3d8a4a" stroke-width="8"/>
+    <text x="130" y="430" text-anchor="middle" font-size="26" fill="#2a8f8c" font-family="Arial">аещфйжйп</text>
+  </g>
+</svg>

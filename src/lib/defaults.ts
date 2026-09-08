@@ -1,0 +1,140 @@
+export const DEFAULT_CONTENT = {
+  logo_text: "תפארתי",
+  hero_title: "קישוטים מרהיבים לסוכה בעבודת יד",
+  catalog_cta: "לקטלוג הקישוטים המלא",
+  about_title: "הקישוטים שלנו",
+  about_body: `קישוטים לסוכה מאויירים בעבודת יד ומודפסים על בד מיוחד.
+עמיד בגשם ומחזיק לשנים.
+כן כן, זה מגיע ממש כמו בתמונה, עם עץ ומתלה,
+את כל הדגמים ניתן להזמין גם מודפסים על A3 עם למינציה.
+
+השנה הסוכה שלכם תהיה יפה יותר!`,
+  footer_text: "תפארתי · עיצוב גרפי · קישוטים לסוכה בעבודת יד",
+};
+
+const standard = {
+  fabricShape: "standard" as const,
+  priceLargeAgorot: 12000,
+  priceSmallAgorot: 8000,
+  priceSquareAgorot: null,
+  priceLaminatedAgorot: 3000,
+};
+
+const square = {
+  fabricShape: "square" as const,
+  priceLargeAgorot: null,
+  priceSmallAgorot: null,
+  priceSquareAgorot: 12000,
+  priceLaminatedAgorot: 3000,
+};
+
+export const SAMPLE_PRODUCTS = [
+  {
+    name: "ושמחת בחגך",
+    slug: "vesamachta",
+    description: "ברכת החג באיור פרחים בצבעי מים. מגיע עם עץ ומתלה, מוכן לתלייה.",
+    imageUrl: "/images/products/vesamachta.jpg",
+    featured: true,
+    sortOrder: 1,
+    ...standard,
+  },
+  {
+    name: "ארץ חיטה",
+    slug: "eretz-chita",
+    description: "שבעת המינים באיור בוטני עדין, מודפס על בד מיוחד.",
+    imageUrl: "/images/products/eretz-chita.jpg",
+    featured: true,
+    sortOrder: 2,
+    ...standard,
+  },
+  {
+    name: "ופתח לנו שערים",
+    slug: "shearim",
+    description: "קישוט ליטורגי מאוייר ביד, עמיד בגשם ומחזיק לשנים.",
+    imageUrl: "/images/products/shearim.jpg",
+    featured: false,
+    sortOrder: 3,
+    ...standard,
+  },
+  {
+    name: "שמחו בה׳",
+    slug: "simchu",
+    description: "איור פרחוני שמח לחג. מגיע כמו בתמונה, עם עץ ומתלה.",
+    imageUrl: "/images/products/simchu.jpg",
+    featured: false,
+    sortOrder: 4,
+    ...standard,
+  },
+  {
+    name: "ושמחת בחגך 2",
+    slug: "vesamachta-2",
+    description: "גרסה נוספת לברכת החג, באיור שונה ובאותה איכות בד.",
+    imageUrl: "/images/products/vesamachta-2.jpg",
+    featured: false,
+    sortOrder: 5,
+    ...standard,
+  },
+  {
+    name: "סוכה ולולב",
+    slug: "sukkah-lulav",
+    description: "סוכה, לולב ורימונים בצבעי מים. מתאים לפינת החג.",
+    imageUrl: "/images/products/sukkah-lulav.jpg",
+    featured: true,
+    sortOrder: 6,
+    ...standard,
+  },
+  {
+    name: "ואני בחסדך בטחתי",
+    slug: "chasdecha",
+    description: "תהילים י״ג באיור עלים עדין, על בד או במנויילן A3.",
+    imageUrl: "/images/products/chasdecha.jpg",
+    featured: true,
+    sortOrder: 7,
+    ...standard,
+  },
+  {
+    name: "עולו אושפיזין",
+    slug: "ushpizin",
+    description: "קישוט אושפיזין מאוייר ביד, מוכן לתלייה בסוכה.",
+    imageUrl: "/images/products/ushpizin.jpg",
+    featured: false,
+    sortOrder: 8,
+    ...standard,
+  },
+  {
+    name: "אור זרוע לצדיק",
+    slug: "or-zarua",
+    description: "קישוט מרובע 50×50, מודפס על בד מיוחד עם עץ ומתלה.",
+    imageUrl: "/images/products/or-zarua.jpg",
+    featured: false,
+    sortOrder: 9,
+    ...square,
+  },
+  {
+    name: "הרחמן",
+    slug: "harachaman",
+    description: "קישוט מרובע 50×50 מאוייר ביד. ניתן גם במנויילן A3.",
+    imageUrl: "/images/products/harachaman.jpg",
+    featured: false,
+    sortOrder: 10,
+    ...square,
+  },
+  {
+    name: "ופרוש עלינו סוכת שלומך",
+    slug: "ufros",
+    description: "ברכת סוכת שלום עם זר פרחים בצבעי מים, מגיע עם עץ ומתלה.",
+    imageUrl: "/images/products/ufros.jpg",
+    featured: true,
+    sortOrder: 11,
+    ...standard,
+  },
+  {
+    name: "ברכנו אבינו",
+    slug: "barechenu",
+    description: "ברכת העמידה באיור פרחוני צבעוני, עמיד בגשם ומחזיק לשנים.",
+    imageUrl: "/images/products/barechenu.jpg",
+    featured: true,
+    sortOrder: 12,
+    ...standard,
+  },
+];
