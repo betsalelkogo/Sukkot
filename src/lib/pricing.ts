@@ -12,14 +12,26 @@ export const VARIANT_LABEL: Record<ProductVariant, string> = {
 const DEAL_GROUP: Record<ProductVariant, "large" | "small" | "laminated" | null> = {
   fabric_large: "large",
   fabric_small: "small",
-  fabric_square: null,
+  fabric_square: "large",
   laminated: "laminated",
 };
 
 export const PAIR_DEALS = {
-  large: { pairPriceAgorot: 20000, unitAgorot: 12000, label: "כל שני קישוטים גדולים ב-200 ₪" },
-  small: { pairPriceAgorot: 15000, unitAgorot: 8000, label: "כל שני קישוטים קטנים ב-150 ₪" },
-  laminated: { pairPriceAgorot: 5000, unitAgorot: 3000, label: "כל שני מנויילנים ב-50 ₪" },
+  large: {
+    pairPriceAgorot: 20000,
+    unitAgorot: 12000,
+    label: "כל שני קישוטים גדולים או 50×50 ב-200 ₪, גם מאותו דגם",
+  },
+  small: {
+    pairPriceAgorot: 15000,
+    unitAgorot: 8000,
+    label: "כל שני קישוטים קטנים ב-150 ₪, גם מאותו דגם",
+  },
+  laminated: {
+    pairPriceAgorot: 5000,
+    unitAgorot: 3000,
+    label: "כל שני מנויילנים ב-50 ₪, גם מאותו דגם",
+  },
 } as const;
 
 export type PricedItem = {
