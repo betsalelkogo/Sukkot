@@ -58,8 +58,7 @@ export default async function HomePage() {
             ))}
           </div>
           <p className="mt-8 text-sm text-[var(--muted)]">
-            כל שני קישוטים גדולים או 50×50 ב-200 ₪ · כל שני קטנים ב-150 ₪ · כל שני
-            מנויילנים ב-50 ₪ · גם שני זהים מאותו דגם
+            2 בדים גדולים ב-200 ₪ · 2 בדים קטנים ב-150 ₪ · 2 מנויילנים ב-50 ₪
           </p>
           <Link href="/catalog" className="btn-primary mt-6">
             {content.catalog_cta}

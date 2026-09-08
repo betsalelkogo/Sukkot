@@ -3,7 +3,7 @@ import { DEFAULT_CONTENT, SAMPLE_PRODUCTS } from "./defaults";
 import { getDb } from "./db";
 import { parseGallery } from "./images";
 import { hasAnyStock } from "./pricing";
-import { orderItems, orders, products, siteContent } from "./schema";
+import { orderItems, orders, pickupPoints, products, siteContent } from "./schema";
 
 export type ProductRecord = {
   id: string;
@@ -13,6 +13,8 @@ export type ProductRecord = {
   imageUrl: string;
   galleryUrls: string[];
   fabricShape: string;
+  customFabricSize: string | null;
+  customLaminatedSize: string | null;
   priceLargeAgorot: number | null;
   priceSmallAgorot: number | null;
   priceSquareAgorot: number | null;
@@ -29,7 +31,15 @@ export type ProductRecord = {
 function asRecord(
   product: Omit<
     ProductRecord,
-    "id" | "inStock" | "galleryUrls" | "stockLarge" | "stockSmall" | "stockSquare" | "stockLaminated"
+    | "id"
+    | "inStock"
+    | "galleryUrls"
+    | "stockLarge"
+    | "stockSmall"
+    | "stockSquare"
+    | "stockLaminated"
+    | "customFabricSize"
+    | "customLaminatedSize"
   > & {
     id?: string;
     inStock?: boolean;
@@ -38,16 +48,20 @@ function asRecord(
     stockSmall?: number;
     stockSquare?: number;
     stockLaminated?: number;
+    customFabricSize?: string | null;
+    customLaminatedSize?: string | null;
   },
   index: number,
 ): ProductRecord {
   const stockLarge = product.stockLarge ?? (product.fabricShape === "square" ? 0 : 10);
-  const stockSmall = product.stockSmall ?? (product.fabricShape === "square" ? 0 : 10);
+  const stockSmall = product.stockSmall ?? (product.fabricShape === "square" || product.fabricShape === "custom" ? 0 : 10);
   const stockSquare = product.stockSquare ?? (product.fabricShape === "square" ? 10 : 0);
   const stockLaminated = product.stockLaminated ?? 10;
   const record = {
     ...product,
     id: product.id ?? `sample-${index + 1}`,
+    customFabricSize: product.customFabricSize ?? null,
+    customLaminatedSize: product.customLaminatedSize ?? null,
     stockLarge,
     stockSmall,
     stockSquare,
@@ -67,6 +81,8 @@ function fromRow(row: typeof products.$inferSelect): ProductRecord {
     imageUrl: row.imageUrl,
     galleryUrls: parseGallery(row.galleryUrls),
     fabricShape: row.fabricShape,
+    customFabricSize: row.customFabricSize,
+    customLaminatedSize: row.customLaminatedSize,
     priceLargeAgorot: row.priceLargeAgorot,
     priceSmallAgorot: row.priceSmallAgorot,
     priceSquareAgorot: row.priceSquareAgorot,
@@ -126,6 +142,40 @@ export async function getProductById(id: string) {
   }
   const [row] = await db.select().from(products).where(eq(products.id, id)).limit(1);
   return row ? fromRow(row) : null;
+}
+
+export type PickupPointRecord = {
+  id: string;
+  name: string;
+  details: string;
+  hours: string | null;
+  sortOrder: number;
+  active: boolean;
+};
+
+export async function getPickupPoints(options?: { activeOnly?: boolean }): Promise<PickupPointRecord[]> {
+  const db = getDb();
+  if (!db) {
+    return [];
+  }
+  try {
+    const rows = await db
+      .select()
+      .from(pickupPoints)
+      .orderBy(asc(pickupPoints.sortOrder), asc(pickupPoints.name));
+    return rows
+      .filter((row) => (options?.activeOnly ? row.active : true))
+      .map((row) => ({
+        id: row.id,
+        name: row.name,
+        details: row.details,
+        hours: row.hours,
+        sortOrder: row.sortOrder,
+        active: row.active,
+      }));
+  } catch {
+    return [];
+  }
 }
 
 export async function getOrders() {

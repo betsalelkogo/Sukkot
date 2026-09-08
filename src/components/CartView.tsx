@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { formatIls } from "@/lib/money";
+import { SalePrice } from "@/components/SalePrice";
 import { PAIR_DEALS, VARIANT_LABEL } from "@/lib/pricing";
 import { useCart } from "./CartProvider";
 
@@ -30,14 +31,16 @@ export function CartView() {
           <img src={item.imageUrl} alt="" className="h-24 w-20 rounded object-cover" />
           <div className="flex-1">
             <h2 className="text-lg font-semibold">{item.name}</h2>
-            <p className="text-sm text-[var(--muted)]">{VARIANT_LABEL[item.variant]}</p>
-            <p>{formatIls(item.unitPriceAgorot)}</p>
+            <p className="text-sm text-[var(--muted)]">{item.variantLabel || VARIANT_LABEL[item.variant]}</p>
+            <p>
+              <SalePrice agorot={item.unitPriceAgorot} />
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <input
               type="number"
               min={1}
-              max={item.stockQuantity}
+              max={99}
               value={item.quantity}
               onChange={(event) =>
                 updateQuantity(item.productId, item.variant, Number(event.target.value))

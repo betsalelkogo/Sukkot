@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductInput } from "@/lib/validations";
 
+type FabricShape = ProductInput["fabricShape"];
+
 type Props = {
   productId?: string;
   defaultValues?: Partial<ProductInput>;
@@ -16,6 +18,7 @@ export function ProductForm({ productId, defaultValues }: Props) {
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState(defaultValues?.imageUrl ?? "");
   const [galleryUrls, setGalleryUrls] = useState<string[]>(defaultValues?.galleryUrls ?? []);
+  const [fabricShape, setFabricShape] = useState<FabricShape>(defaultValues?.fabricShape ?? "standard");
 
   async function uploadFile(file: File) {
     const form = new FormData();
@@ -88,11 +91,13 @@ export function ProductForm({ productId, defaultValues }: Props) {
       description: String(form.get("description") ?? ""),
       imageUrl,
       galleryUrls,
-      fabricShape: String(form.get("fabricShape") ?? "standard"),
-      priceLargeShekels: Number(form.get("priceLargeShekels") || 0),
-      priceSmallShekels: Number(form.get("priceSmallShekels") || 0),
-      priceSquareShekels: Number(form.get("priceSquareShekels") || 0),
-      laminatedA3Price: Number(form.get("laminatedA3Price")),
+      fabricShape,
+      customFabricSize: fabricShape === "custom" ? String(form.get("customFabricSize") ?? "") : "",
+      customLaminatedSize: fabricShape === "custom" ? String(form.get("customLaminatedSize") ?? "") : "",
+      priceLargeShekels: fabricShape === "square" ? 0 : Number(form.get("priceLargeShekels") || 0),
+      priceSmallShekels: fabricShape === "standard" ? Number(form.get("priceSmallShekels") || 0) : 0,
+      priceSquareShekels: fabricShape === "square" ? Number(form.get("priceSquareShekels") || 0) : 0,
+      laminatedA3Price: Number(form.get("laminatedA3Price") || 0),
       stockLarge: Number(form.get("stockLarge") || 0),
       stockSmall: Number(form.get("stockSmall") || 0),
       stockSquare: Number(form.get("stockSquare") || 0),
@@ -206,24 +211,65 @@ export function ProductForm({ productId, defaultValues }: Props) {
       </div>
 
       <label className="block space-y-1">
-        <span>צורת בד</span>
+        <span>סוג מוצר</span>
         <select
           name="fabricShape"
-          defaultValue={defaultValues?.fabricShape ?? "standard"}
+          value={fabricShape}
+          onChange={(event) => setFabricShape(event.target.value as FabricShape)}
           className="w-full rounded-md border border-[var(--line)] px-3 py-2"
         >
-          <option value="standard">רגיל (גדול/קטן)</option>
-          <option value="square">מרובע 50×50</option>
+          <option value="standard">רגיל (50×70 / 35×50)</option>
+          <option value="square">ריבוע 50×50 (מנויילן 30×30)</option>
+          <option value="custom">גודל מותאם אישית</option>
         </select>
       </label>
-      <Field name="priceLargeShekels" label="מחיר בד גדול 50×70 (0 אם אין)" type="number" defaultValue={defaultValues?.priceLargeShekels ?? 0} />
-      <Field name="stockLarge" label="מלאי בד גדול" type="number" defaultValue={defaultValues?.stockLarge ?? 10} />
-      <Field name="priceSmallShekels" label="מחיר בד קטן 35×50 (0 אם אין)" type="number" defaultValue={defaultValues?.priceSmallShekels ?? 0} />
-      <Field name="stockSmall" label="מלאי בד קטן" type="number" defaultValue={defaultValues?.stockSmall ?? 10} />
-      <Field name="priceSquareShekels" label="מחיר בד 50×50 (0 אם אין)" type="number" defaultValue={defaultValues?.priceSquareShekels ?? 0} />
-      <Field name="stockSquare" label="מלאי בד 50×50" type="number" defaultValue={defaultValues?.stockSquare ?? 0} />
-      <Field name="laminatedA3Price" label="מחיר מנויילן A3" type="number" defaultValue={defaultValues?.laminatedA3Price} required />
-      <Field name="stockLaminated" label="מלאי מנויילן A3" type="number" defaultValue={defaultValues?.stockLaminated ?? 10} />
+      <p className="text-sm text-[var(--muted)]">אפשר להשאיר מחיר 0 לגודל שלא מוצע. לא חובה שלושה גדלים.</p>
+      {fabricShape === "standard" ? (
+        <>
+          <Field name="priceLargeShekels" label="מחיר בד גדול 50×70 (0 אם אין)" type="number" defaultValue={defaultValues?.priceLargeShekels ?? 0} />
+          <Field name="stockLarge" label="מלאי בד גדול" type="number" defaultValue={defaultValues?.stockLarge ?? 10} />
+          <Field name="priceSmallShekels" label="מחיר בד קטן 35×50 (0 אם אין)" type="number" defaultValue={defaultValues?.priceSmallShekels ?? 0} />
+          <Field name="stockSmall" label="מלאי בד קטן" type="number" defaultValue={defaultValues?.stockSmall ?? 10} />
+        </>
+      ) : null}
+      {fabricShape === "square" ? (
+        <>
+          <Field name="priceSquareShekels" label="מחיר בד 50×50 (0 אם אין)" type="number" defaultValue={defaultValues?.priceSquareShekels ?? 0} />
+          <Field name="stockSquare" label="מלאי בד 50×50" type="number" defaultValue={defaultValues?.stockSquare ?? 10} />
+        </>
+      ) : null}
+      {fabricShape === "custom" ? (
+        <>
+          <Field name="customFabricSize" label="גודל בד" defaultValue={defaultValues?.customFabricSize ?? ""} placeholder="למשל 40×60" />
+          <Field name="priceLargeShekels" label="מחיר בד (0 אם אין)" type="number" defaultValue={defaultValues?.priceLargeShekels ?? 0} />
+          <Field name="stockLarge" label="מלאי בד" type="number" defaultValue={defaultValues?.stockLarge ?? 10} />
+          <Field name="customLaminatedSize" label="גודל מנויילן" defaultValue={defaultValues?.customLaminatedSize ?? ""} placeholder="למשל 30×30" />
+        </>
+      ) : null}
+      <Field
+        name="laminatedA3Price"
+        label={
+          fabricShape === "square"
+            ? "מחיר מנויילן 30×30 (0 אם אין)"
+            : fabricShape === "custom"
+              ? "מחיר מנויילן (0 אם אין)"
+              : "מחיר מנויילן A3 (0 אם אין)"
+        }
+        type="number"
+        defaultValue={defaultValues?.laminatedA3Price ?? 0}
+      />
+      <Field
+        name="stockLaminated"
+        label={
+          fabricShape === "square"
+            ? "מלאי מנויילן 30×30"
+            : fabricShape === "custom"
+              ? "מלאי מנויילן"
+              : "מלאי מנויילן A3"
+        }
+        type="number"
+        defaultValue={defaultValues?.stockLaminated ?? 10}
+      />
       <Field name="sortOrder" label="סדר תצוגה" type="number" defaultValue={defaultValues?.sortOrder ?? 0} />
       <label className="flex items-center gap-2">
         <input type="checkbox" name="featured" defaultChecked={defaultValues?.featured ?? false} />
@@ -251,12 +297,14 @@ function Field({
   type = "text",
   defaultValue,
   required,
+  placeholder,
 }: {
   name: string;
   label: string;
   type?: string;
   defaultValue?: string | number;
   required?: boolean;
+  placeholder?: string;
 }) {
   return (
     <label className="block space-y-1">
@@ -267,6 +315,7 @@ function Field({
         step={type === "number" ? "1" : undefined}
         defaultValue={defaultValue}
         required={required}
+        placeholder={placeholder}
         className="w-full rounded-md border border-[var(--line)] px-3 py-2"
       />
     </label>

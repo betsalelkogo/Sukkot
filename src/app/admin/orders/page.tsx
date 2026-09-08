@@ -20,6 +20,7 @@ export default async function AdminOrdersPage() {
             <tr>
               <th className="p-3">תאריך</th>
               <th className="p-3">לקוח</th>
+              <th className="p-3">איסוף</th>
               <th className="p-3">סכום</th>
               <th className="p-3">סטטוס</th>
               <th className="p-3"></th>
@@ -30,6 +31,7 @@ export default async function AdminOrdersPage() {
               <tr key={order.id} className="border-t border-[var(--line)]">
                 <td className="p-3">{order.createdAt.toLocaleString("he-IL")}</td>
                 <td className="p-3">{order.customerName}</td>
+                <td className="p-3">{order.pickupPointName || "-"}</td>
                 <td className="p-3">{formatIls(order.totalAgorot)}</td>
                 <td className="p-3">{statusLabel[order.status] ?? order.status}</td>
                 <td className="p-3">

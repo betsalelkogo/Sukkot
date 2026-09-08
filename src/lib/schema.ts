@@ -16,6 +16,8 @@ export const products = pgTable("products", {
   imageUrl: text("image_url").notNull(),
   galleryUrls: text("gallery_urls").notNull().default("[]"),
   fabricShape: text("fabric_shape").notNull().default("standard"),
+  customFabricSize: text("custom_fabric_size"),
+  customLaminatedSize: text("custom_laminated_size"),
   priceLargeAgorot: integer("price_large_agorot"),
   priceSmallAgorot: integer("price_small_agorot"),
   priceSquareAgorot: integer("price_square_agorot"),
@@ -44,6 +46,17 @@ export const siteContent = pgTable("site_content", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const pickupPoints = pgTable("pickup_points", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  details: text("details").notNull().default(""),
+  hours: text("hours"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
   customerName: text("customer_name").notNull(),
@@ -51,6 +64,8 @@ export const orders = pgTable("orders", {
   customerPhone: text("customer_phone").notNull(),
   address: text("address").notNull(),
   city: text("city").notNull(),
+  pickupPointId: uuid("pickup_point_id"),
+  pickupPointName: text("pickup_point_name"),
   notes: text("notes"),
   status: text("status").notNull().default("pending"),
   totalAgorot: integer("total_agorot").notNull(),

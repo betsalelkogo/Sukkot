@@ -28,7 +28,12 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           description: product.description,
           imageUrl: product.imageUrl,
           galleryUrls: product.galleryUrls,
-          fabricShape: product.fabricShape === "square" ? "square" : "standard",
+          fabricShape:
+            product.fabricShape === "square" || product.fabricShape === "custom"
+              ? product.fabricShape
+              : "standard",
+          customFabricSize: product.customFabricSize ?? "",
+          customLaminatedSize: product.customLaminatedSize ?? "",
           priceLargeShekels: agorotToShekels(product.priceLargeAgorot ?? 0),
           priceSmallShekels: agorotToShekels(product.priceSmallAgorot ?? 0),
           priceSquareShekels: agorotToShekels(product.priceSquareAgorot ?? 0),

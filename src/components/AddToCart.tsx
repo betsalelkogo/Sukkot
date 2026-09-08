@@ -2,22 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatIls } from "@/lib/money";
-import { priceForVariant, stockForVariant, VARIANT_LABEL, type ProductVariant } from "@/lib/pricing";
+import { DealPopup } from "@/components/DealPopup";
+import { SalePrice } from "@/components/SalePrice";
+import { DEAL_GROUP, offeredVariants, priceForVariant, stockForVariant, variantLabel, type ProductVariant } from "@/lib/pricing";
 import type { ProductRecord } from "@/lib/queries";
 import { useCart } from "./CartProvider";
 
 export function AddToCart({ product }: { product: ProductRecord }) {
   const { addItem, remainingFor } = useCart();
   const router = useRouter();
-  const options = (["fabric_large", "fabric_small", "fabric_square", "laminated"] as const).filter(
-    (variant) => priceForVariant(product, variant),
-  );
+  const options = offeredVariants(product);
   const [variant, setVariant] = useState<ProductVariant>(options[0] ?? "laminated");
   const [quantity, setQuantity] = useState(1);
+  const [dealGroup, setDealGroup] = useState<"large" | "small" | "laminated" | null>(null);
   const price = priceForVariant(product, variant) ?? 0;
   const remaining = remainingFor(product.id, variant, stockForVariant(product, variant));
   const canAdd = price > 0 && remaining > 0;
+  const canAddAnother = remaining > 0;
 
   return (
     <div className="space-y-4">
@@ -37,12 +38,14 @@ export function AddToCart({ product }: { product: ProductRecord }) {
                 onChange={() => setVariant(option)}
               />
               <span>
-                <strong>{VARIANT_LABEL[option]}</strong>
-                <span className="mt-1 block text-sm text-[var(--muted)]">
-                  {optionStock > 0 ? `${optionStock} במלאי` : "אזל"}
-                </span>
+                <strong>{variantLabel(option, product)}</strong>
+                {optionStock <= 0 ? (
+                  <span className="mt-1 block text-sm text-[var(--muted)]">אזל מהמלאי</span>
+                ) : null}
               </span>
-              <span className="ms-auto font-semibold">{formatIls(priceForVariant(product, option) ?? 0)}</span>
+              <span className="ms-auto text-sm">
+                <SalePrice agorot={priceForVariant(product, option) ?? 0} align="end" />
+              </span>
             </label>
           );
         })}
@@ -52,8 +55,8 @@ export function AddToCart({ product }: { product: ProductRecord }) {
         <input
           type="number"
           min={1}
-          max={Math.max(1, remaining)}
-          value={Math.min(quantity, Math.max(1, remaining))}
+          max={99}
+          value={quantity}
           disabled={!canAdd}
           onChange={(event) => setQuantity(Number(event.target.value) || 1)}
           className="w-24 rounded-md border border-[var(--line)] px-3 py-2"
@@ -64,6 +67,7 @@ export function AddToCart({ product }: { product: ProductRecord }) {
         className="btn-primary w-full"
         disabled={!canAdd}
         onClick={() => {
+          const added = Math.min(quantity, remaining);
           addItem(
             {
               productId: product.id,
@@ -71,16 +75,46 @@ export function AddToCart({ product }: { product: ProductRecord }) {
               name: product.name,
               imageUrl: product.imageUrl,
               variant,
+              variantLabel: variantLabel(variant, product),
               unitPriceAgorot: price,
               stockQuantity: stockForVariant(product, variant),
             },
-            Math.min(quantity, remaining),
+            added,
           );
+          const group = DEAL_GROUP[variant];
+          if (added === 1 && group) {
+            setDealGroup(group);
+            return;
+          }
           router.push("/cart");
         }}
       >
         {canAdd ? "הוספה לסל" : "אזל מהמלאי"}
       </button>
+      {dealGroup ? (
+        <DealPopup
+          group={dealGroup}
+          canAddAnother={canAddAnother}
+          onAddAnother={() => {
+            addItem(
+              {
+                productId: product.id,
+                slug: product.slug,
+                name: product.name,
+                imageUrl: product.imageUrl,
+                variant,
+                variantLabel: variantLabel(variant, product),
+                unitPriceAgorot: price,
+                stockQuantity: stockForVariant(product, variant),
+              },
+              1,
+            );
+            router.push("/cart");
+          }}
+          onGoCart={() => router.push("/cart")}
+          onKeepShopping={() => router.push("/catalog")}
+        />
+      ) : null}
     </div>
   );
 }

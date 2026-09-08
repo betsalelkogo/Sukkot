@@ -7,8 +7,7 @@ export const checkoutSchema = z.object({
   customerName: z.string().trim().min(2).max(80),
   customerEmail: z.string().trim().email().max(120),
   customerPhone: z.string().trim().regex(phonePattern, "מספר טלפון לא תקין"),
-  address: z.string().trim().min(4).max(160),
-  city: z.string().trim().min(2).max(80),
+  pickupPointId: z.string().uuid(),
   notes: z.string().trim().max(400).optional().or(z.literal("")),
   items: z
     .array(
@@ -47,17 +46,45 @@ export const productSchema = z.object({
     )
     .max(8)
     .default([]),
-  fabricShape: z.enum(["standard", "square"]),
+  fabricShape: z.enum(["standard", "square", "custom"]),
+  customFabricSize: z.string().trim().max(40).optional().or(z.literal("")),
+  customLaminatedSize: z.string().trim().max(40).optional().or(z.literal("")),
   priceLargeShekels: z.number().min(0).max(20000),
   priceSmallShekels: z.number().min(0).max(20000),
   priceSquareShekels: z.number().min(0).max(20000),
-  laminatedA3Price: z.number().positive().max(20000),
+  laminatedA3Price: z.number().min(0).max(20000),
   stockLarge: z.number().int().min(0).max(9999),
   stockSmall: z.number().int().min(0).max(9999),
   stockSquare: z.number().int().min(0).max(9999),
   stockLaminated: z.number().int().min(0).max(9999),
   featured: z.boolean(),
   sortOrder: z.number().int().min(0).max(9999),
+}).superRefine((data, ctx) => {
+  const hasLarge = data.priceLargeShekels > 0;
+  const hasSmall = data.priceSmallShekels > 0;
+  const hasSquare = data.priceSquareShekels > 0;
+  const hasLaminated = data.laminatedA3Price > 0;
+  if (!hasLarge && !hasSmall && !hasSquare && !hasLaminated) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "יש להזין לפחות גודל אחד עם מחיר",
+      path: ["priceLargeShekels"],
+    });
+  }
+  if (data.fabricShape === "custom" && hasLarge && !data.customFabricSize) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "יש להזין את גודל הבד",
+      path: ["customFabricSize"],
+    });
+  }
+  if (data.fabricShape === "custom" && hasLaminated && !data.customLaminatedSize) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "יש להזין את גודל המנויילן",
+      path: ["customLaminatedSize"],
+    });
+  }
 });
 
 export const contentSchema = z.object({
@@ -74,5 +101,14 @@ export const loginSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
+export const pickupPointSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  details: z.string().trim().max(240).optional().or(z.literal("")),
+  hours: z.string().trim().max(120).optional().or(z.literal("")),
+  sortOrder: z.number().int().min(0).max(9999),
+  active: z.boolean(),
+});
+
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type ProductInput = z.infer<typeof productSchema>;
+export type PickupPointInput = z.infer<typeof pickupPointSchema>;

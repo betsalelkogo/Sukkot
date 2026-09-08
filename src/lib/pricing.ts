@@ -9,7 +9,37 @@ export const VARIANT_LABEL: Record<ProductVariant, string> = {
   laminated: "מנויילן A3",
 };
 
-const DEAL_GROUP: Record<ProductVariant, "large" | "small" | "laminated" | null> = {
+export type ProductLabelInfo = {
+  fabricShape?: string | null;
+  customFabricSize?: string | null;
+  customLaminatedSize?: string | null;
+};
+
+export function variantLabel(variant: ProductVariant, product?: ProductLabelInfo | null) {
+  if (variant === "fabric_large" && product?.fabricShape === "custom" && product.customFabricSize) {
+    return `בד ${product.customFabricSize}, עם עץ ומתלה`;
+  }
+  if (variant === "laminated") {
+    if (product?.fabricShape === "square") {
+      return "מנויילן 30×30";
+    }
+    if (product?.fabricShape === "custom" && product.customLaminatedSize) {
+      return `מנויילן ${product.customLaminatedSize}`;
+    }
+  }
+  return VARIANT_LABEL[variant];
+}
+
+export function offeredVariants(product: {
+  priceLargeAgorot: number | null;
+  priceSmallAgorot: number | null;
+  priceSquareAgorot: number | null;
+  priceLaminatedAgorot: number | null;
+}) {
+  return VARIANTS.filter((variant) => Boolean(priceForVariant(product, variant)));
+}
+
+export const DEAL_GROUP: Record<ProductVariant, "large" | "small" | "laminated" | null> = {
   fabric_large: "large",
   fabric_small: "small",
   fabric_square: "large",
@@ -20,17 +50,17 @@ export const PAIR_DEALS = {
   large: {
     pairPriceAgorot: 20000,
     unitAgorot: 12000,
-    label: "כל שני קישוטים גדולים או 50×50 ב-200 ₪, גם מאותו דגם",
+    label: "2 בדים גדולים ב-200 ₪",
   },
   small: {
     pairPriceAgorot: 15000,
     unitAgorot: 8000,
-    label: "כל שני קישוטים קטנים ב-150 ₪, גם מאותו דגם",
+    label: "2 בדים קטנים ב-150 ₪",
   },
   laminated: {
     pairPriceAgorot: 5000,
     unitAgorot: 3000,
-    label: "כל שני מנויילנים ב-50 ₪, גם מאותו דגם",
+    label: "2 מנויילנים ב-50 ₪",
   },
 } as const;
 
@@ -56,7 +86,7 @@ export function startingPriceAgorot(product: {
   priceLargeAgorot: number | null;
   priceSmallAgorot: number | null;
   priceSquareAgorot: number | null;
-  priceLaminatedAgorot: number;
+  priceLaminatedAgorot: number | null;
 }) {
   const prices = [
     product.priceLargeAgorot,
@@ -64,14 +94,14 @@ export function startingPriceAgorot(product: {
     product.priceSquareAgorot,
     product.priceLaminatedAgorot,
   ].filter((value): value is number => typeof value === "number" && value > 0);
-  return Math.min(...prices);
+  return prices.length ? Math.min(...prices) : 0;
 }
 
 export type StockedProduct = {
   priceLargeAgorot: number | null;
   priceSmallAgorot: number | null;
   priceSquareAgorot: number | null;
-  priceLaminatedAgorot: number;
+  priceLaminatedAgorot: number | null;
   stockLarge: number;
   stockSmall: number;
   stockSquare: number;
@@ -97,7 +127,7 @@ export function priceForVariant(
     priceLargeAgorot: number | null;
     priceSmallAgorot: number | null;
     priceSquareAgorot: number | null;
-    priceLaminatedAgorot: number;
+    priceLaminatedAgorot: number | null;
   },
   variant: ProductVariant,
 ) {

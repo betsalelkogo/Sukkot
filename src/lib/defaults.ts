@@ -113,7 +113,7 @@ export const SAMPLE_PRODUCTS = [
   {
     name: "הרחמן",
     slug: "harachaman",
-    description: "קישוט מרובע 50×50 מאוייר ביד. ניתן גם במנויילן A3.",
+    description: "קישוט מרובע 50×50 מאוייר ביד. ניתן גם במנויילן 30×30.",
     imageUrl: "/images/products/harachaman.jpg",
     featured: false,
     sortOrder: 10,

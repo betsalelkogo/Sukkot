@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { requireDb } from "@/lib/db";
 import { createPaymentForm, isMorningConfigured } from "@/lib/morning";
 import { agorotToShekels } from "@/lib/money";
-import { dealDiscountAgorot, priceForVariant, stockForVariant, VARIANT_LABEL, type ProductVariant } from "@/lib/pricing";
+import { dealDiscountAgorot, priceForVariant, stockForVariant, variantLabel, type ProductVariant } from "@/lib/pricing";
 import { rateLimit } from "@/lib/rate-limit";
-import { orderItems, orders, products } from "@/lib/schema";
+import { orderItems, orders, pickupPoints, products } from "@/lib/schema";
 import { releaseStock, reserveStock } from "@/lib/stock";
 import { checkoutSchema } from "@/lib/validations";
 
@@ -36,6 +36,14 @@ export async function POST(request: Request) {
 
   const input = parsed.data;
   const db = requireDb();
+  const [pickup] = await db
+    .select()
+    .from(pickupPoints)
+    .where(eq(pickupPoints.id, input.pickupPointId))
+    .limit(1);
+  if (!pickup || !pickup.active) {
+    return NextResponse.json({ error: "יש לבחור נקודת איסוף זמינה." }, { status: 400 });
+  }
   const ids = [...new Set(input.items.map((item) => item.productId))];
   const catalog = await db.select().from(products).where(inArray(products.id, ids));
 
@@ -87,8 +95,10 @@ export async function POST(request: Request) {
           customerName: input.customerName,
           customerEmail: input.customerEmail,
           customerPhone: input.customerPhone,
-          address: input.address,
-          city: input.city,
+          address: pickup.details || pickup.name,
+          city: pickup.name,
+          pickupPointId: pickup.id,
+          pickupPointName: pickup.name,
           notes: input.notes || null,
           status: "pending",
           totalAgorot,
@@ -108,7 +118,7 @@ export async function POST(request: Request) {
       );
 
       const income = pricedItems.map((item) => ({
-        description: `${item.product.name} — ${VARIANT_LABEL[item.variant]}`,
+        description: `${item.product.name} — ${variantLabel(item.variant, item.product)}`,
         quantity: item.quantity,
         price: agorotToShekels(item.unitPriceAgorot),
         currency: "ILS" as const,

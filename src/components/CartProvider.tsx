@@ -9,6 +9,7 @@ export type CartItem = {
   name: string;
   imageUrl: string;
   variant: ProductVariant;
+  variantLabel: string;
   quantity: number;
   unitPriceAgorot: number;
   stockQuantity: number;
@@ -28,7 +29,7 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "sukkot-cart-v4";
+const STORAGE_KEY = "sukkot-cart-v5";
 
 function remainingForVariant(
   items: CartItem[],

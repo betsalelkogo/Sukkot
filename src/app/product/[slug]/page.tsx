@@ -3,6 +3,7 @@ import { AddToCart } from "@/components/AddToCart";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ProductGallery } from "@/components/ProductGallery";
+import { offeredVariants, variantLabel } from "@/lib/pricing";
 import { getContent, getProductBySlug } from "@/lib/queries";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -24,7 +25,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <li>מאוייר בעבודת יד ומודפס על בד מיוחד</li>
             <li>עמיד בגשם ומחזיק לשנים</li>
             <li>מגיע עם עץ ומתלה, מוכן לתלייה</li>
-            <li>בד גדול 50×70, בד קטן 35×50, או מנויילן A3</li>
+            <li>{offeredVariants(product).map((variant) => variantLabel(variant, product)).join(" · ") || "גודל לפי בחירה"}</li>
           </ul>
           <AddToCart product={product} />
         </div>

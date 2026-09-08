@@ -1,19 +1,12 @@
 import Link from "next/link";
 import { formatIls } from "@/lib/money";
-import { priceForVariant, stockForVariant, type ProductVariant } from "@/lib/pricing";
+import { priceForVariant, stockForVariant, variantLabel, type ProductVariant } from "@/lib/pricing";
 import { getProducts } from "@/lib/queries";
 
 function stockSummary(product: Awaited<ReturnType<typeof getProducts>>[number]) {
-  const parts = (
-    [
-      ["fabric_large", "גדול"],
-      ["fabric_small", "קטן"],
-      ["fabric_square", "50×50"],
-      ["laminated", "A3"],
-    ] as const
-  )
-    .filter(([variant]) => priceForVariant(product, variant as ProductVariant))
-    .map(([variant, label]) => `${label} ${stockForVariant(product, variant)}`);
+  const parts = (["fabric_large", "fabric_small", "fabric_square", "laminated"] as const)
+    .filter((variant) => priceForVariant(product, variant as ProductVariant))
+    .map((variant) => `${variantLabel(variant, product)} ${stockForVariant(product, variant)}`);
   return parts.length ? parts.join(" · ") : "אזל";
 }
 
@@ -53,7 +46,7 @@ export default async function AdminProductsPage() {
                       ? formatIls(product.priceSquareAgorot)
                       : "-"}
                 </td>
-                <td className="p-3">{formatIls(product.priceLaminatedAgorot)}</td>
+                <td className="p-3">{product.priceLaminatedAgorot > 0 ? formatIls(product.priceLaminatedAgorot) : "-"}</td>
                 <td className="p-3">{stockSummary(product)}</td>
                 <td className="p-3">
                   <Link href={`/admin/products/${product.id}`} className="text-[var(--teal)]">

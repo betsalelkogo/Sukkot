@@ -2,23 +2,28 @@
 
 import { useState } from "react";
 import { useCart } from "./CartProvider";
+import type { PickupPointRecord } from "@/lib/queries";
 
-export function CheckoutForm() {
+export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord[] }) {
   const { items, clear } = useCart();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [pickupPointId, setPickupPointId] = useState(pickupPoints[0]?.id ?? "");
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    if (!pickupPointId) {
+      setError("יש לבחור נקודת איסוף.");
+      return;
+    }
     setPending(true);
     const form = new FormData(event.currentTarget);
     const payload = {
       customerName: String(form.get("customerName") ?? ""),
       customerEmail: String(form.get("customerEmail") ?? ""),
       customerPhone: String(form.get("customerPhone") ?? ""),
-      address: String(form.get("address") ?? ""),
-      city: String(form.get("city") ?? ""),
+      pickupPointId,
       notes: String(form.get("notes") ?? ""),
       items: items.map((item) => ({
         productId: item.productId,
@@ -52,11 +57,42 @@ export function CheckoutForm() {
       <Field name="customerName" label="שם מלא" required />
       <Field name="customerEmail" label="אימייל" type="email" required />
       <Field name="customerPhone" label="טלפון" required placeholder="0501234567" />
-      <Field name="city" label="עיר" required />
-      <Field name="address" label="כתובת למשלוח" required />
+      <fieldset className="space-y-2">
+        <legend className="mb-2 text-sm font-medium">נקודת איסוף</legend>
+        {pickupPoints.length === 0 ? (
+          <p className="rounded-md bg-[var(--paper)] p-3 text-sm text-[var(--muted)]">
+            עדיין לא הוגדרו נקודות איסוף. אפשר להוסיף אותן באזור הניהול.
+          </p>
+        ) : (
+          pickupPoints.map((point) => (
+            <label
+              key={point.id}
+              className="flex cursor-pointer items-start gap-3 rounded-md border border-[var(--line)] p-3"
+            >
+              <input
+                type="radio"
+                name="pickupPointId"
+                checked={pickupPointId === point.id}
+                onChange={() => setPickupPointId(point.id)}
+              />
+              <span>
+                <strong>{point.name}</strong>
+                {point.details ? <span className="mt-1 block text-sm text-[var(--muted)]">{point.details}</span> : null}
+                {point.hours ? <span className="mt-1 block text-sm text-[var(--muted)]">{point.hours}</span> : null}
+              </span>
+            </label>
+          ))
+        )}
+      </fieldset>
       <label className="block space-y-1">
-        <span className="text-sm">הערות</span>
-        <textarea name="notes" rows={3} className="w-full rounded-md border border-[var(--line)] px-3 py-2" />
+        <span className="text-sm font-medium">הערות להזמנה</span>
+        <textarea
+          name="notes"
+          rows={4}
+          maxLength={400}
+          placeholder="אפשר לכתוב כאן כל דבר שחשוב לנו לדעת על ההזמנה"
+          className="w-full rounded-md border border-[var(--line)] px-3 py-2"
+        />
       </label>
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <button type="submit" className="btn-primary w-full" disabled={pending || items.length === 0}>
