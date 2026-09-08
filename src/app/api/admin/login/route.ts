@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAdminSession, verifyAdminPassword } from "@/lib/auth";
+import { createAdminSession, verifyAdminLogin } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { loginSchema } from "@/lib/validations";
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "פרטים שגויים." }, { status: 401 });
   }
 
-  const ok = await verifyAdminPassword(parsed.data.password);
+  const ok = await verifyAdminLogin(parsed.data.email, parsed.data.password);
   if (!ok) {
     return NextResponse.json({ error: "פרטים שגויים." }, { status: 401 });
   }

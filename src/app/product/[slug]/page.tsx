@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/AddToCart";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { ProductGallery } from "@/components/ProductGallery";
 import { getContent, getProductBySlug } from "@/lib/queries";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -15,10 +16,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     <div className="min-h-screen">
       <Header logo={content.logo_text} />
       <main className="mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-lg bg-[var(--paper)]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.imageUrl} alt={product.name} className="w-full object-contain" />
-        </div>
+        <ProductGallery name={product.name} images={[product.imageUrl, ...product.galleryUrls]} />
         <div className="space-y-5">
           <h1 className="text-4xl font-bold">{product.name}</h1>
           <p className="text-lg leading-8 text-[#333]">{product.description}</p>

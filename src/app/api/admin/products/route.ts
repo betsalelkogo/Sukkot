@@ -30,6 +30,7 @@ export async function POST(request: Request) {
         slug: values.slug,
         description: values.description,
         imageUrl: values.imageUrl,
+        galleryUrls: JSON.stringify(values.galleryUrls),
         fabricShape: values.fabricShape,
         priceLargeAgorot: toAgorot(values.priceLargeShekels),
         priceSmallAgorot: toAgorot(values.priceSmallShekels),

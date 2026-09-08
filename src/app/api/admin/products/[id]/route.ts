@@ -36,6 +36,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         slug: values.slug,
         description: values.description,
         imageUrl: values.imageUrl,
+        galleryUrls: JSON.stringify(values.galleryUrls),
         fabricShape: values.fabricShape,
         priceLargeAgorot: values.priceLargeShekels > 0 ? shekelsToAgorot(values.priceLargeShekels) : null,
         priceSmallAgorot: values.priceSmallShekels > 0 ? shekelsToAgorot(values.priceSmallShekels) : null,

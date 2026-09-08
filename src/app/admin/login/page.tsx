@@ -16,7 +16,10 @@ export default function AdminLoginPage() {
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: String(form.get("password") ?? "") }),
+      body: JSON.stringify({
+        email: String(form.get("email") ?? ""),
+        password: String(form.get("password") ?? ""),
+      }),
     });
     if (!res.ok) {
       setError("הכניסה נכשלה.");
@@ -31,6 +34,16 @@ export default function AdminLoginPage() {
     <main className="mx-auto flex min-h-screen max-w-md items-center px-5">
       <form onSubmit={onSubmit} className="w-full space-y-4 rounded-lg border border-[var(--line)] p-6">
         <h1 className="text-2xl font-bold">כניסה לניהול</h1>
+        <label className="block space-y-1">
+          <span>אימייל</span>
+          <input
+            name="email"
+            type="email"
+            required
+            autoComplete="username"
+            className="w-full rounded-md border border-[var(--line)] px-3 py-2"
+          />
+        </label>
         <label className="block space-y-1">
           <span>סיסמה</span>
           <input

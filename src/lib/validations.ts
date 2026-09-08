@@ -29,10 +29,24 @@ export const productSchema = z.object({
   imageUrl: z
     .string()
     .trim()
+    .min(1)
     .max(500)
-    .refine((value) => value.startsWith("/") || value.startsWith("https://"), {
-      message: "יש להזין נתיב מקומי או כתובת https",
-    }),
+    .refine(
+      (value) =>
+        value.startsWith("/") || value.startsWith("https://"),
+      { message: "יש להעלות תמונה או להזין כתובת https" },
+    ),
+  galleryUrls: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1)
+        .max(500)
+        .refine((value) => value.startsWith("/") || value.startsWith("https://")),
+    )
+    .max(8)
+    .default([]),
   fabricShape: z.enum(["standard", "square"]),
   priceLargeShekels: z.number().min(0).max(20000),
   priceSmallShekels: z.number().min(0).max(20000),
@@ -53,6 +67,7 @@ export const contentSchema = z.object({
 });
 
 export const loginSchema = z.object({
+  email: z.string().trim().email().max(120),
   password: z.string().min(1).max(200),
 });
 

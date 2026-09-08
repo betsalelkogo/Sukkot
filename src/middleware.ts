@@ -1,15 +1,8 @@
 import { jwtVerify } from "jose";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSessionKey } from "@/lib/session-key";
 
 const COOKIE_NAME = "admin_session";
-
-function getSecret() {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret || secret.length < 32) {
-    return null;
-  }
-  return new TextEncoder().encode(secret);
-}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -24,7 +17,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const secret = getSecret();
+  const secret = await getSessionKey();
   const token = request.cookies.get(COOKIE_NAME)?.value;
   if (!secret || !token) {
     return deny(request, isAdminApi);

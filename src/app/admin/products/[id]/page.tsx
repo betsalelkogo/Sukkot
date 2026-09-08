@@ -27,6 +27,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           slug: product.slug,
           description: product.description,
           imageUrl: product.imageUrl,
+          galleryUrls: product.galleryUrls,
           fabricShape: product.fabricShape === "square" ? "square" : "standard",
           priceLargeShekels: agorotToShekels(product.priceLargeAgorot ?? 0),
           priceSmallShekels: agorotToShekels(product.priceSmallAgorot ?? 0),

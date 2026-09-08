@@ -14,6 +14,7 @@ export const products = pgTable("products", {
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
   imageUrl: text("image_url").notNull(),
+  galleryUrls: text("gallery_urls").notNull().default("[]"),
   fabricShape: text("fabric_shape").notNull().default("standard"),
   priceLargeAgorot: integer("price_large_agorot"),
   priceSmallAgorot: integer("price_small_agorot"),
@@ -24,6 +25,13 @@ export const products = pgTable("products", {
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const productImages = pgTable("product_images", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  mimeType: text("mime_type").notNull(),
+  data: text("data").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const siteContent = pgTable("site_content", {

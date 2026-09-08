@@ -13,9 +13,72 @@ export function ProductForm({ productId, defaultValues }: Props) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState(defaultValues?.imageUrl ?? "");
+  const [galleryUrls, setGalleryUrls] = useState<string[]>(defaultValues?.galleryUrls ?? []);
+
+  async function uploadFile(file: File) {
+    const form = new FormData();
+    form.set("file", file);
+    const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+    if (!res.ok) {
+      throw new Error("upload failed");
+    }
+    const data = (await res.json()) as { url?: string };
+    if (!data.url) {
+      throw new Error("upload failed");
+    }
+    return data.url;
+  }
+
+  async function onMainImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+    setUploading(true);
+    setError("");
+    try {
+      setImageUrl(await uploadFile(file));
+    } catch {
+      setError("לא ניתן להעלות את התמונה. נסו JPEG, PNG, WebP או GIF עד 4MB.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function onGalleryImages(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = [...(event.target.files ?? [])];
+    event.target.value = "";
+    if (files.length === 0) {
+      return;
+    }
+    if (galleryUrls.length + files.length > 8) {
+      setError("אפשר עד 8 תמונות נוספות.");
+      return;
+    }
+    setUploading(true);
+    setError("");
+    try {
+      const uploaded: string[] = [];
+      for (const file of files) {
+        uploaded.push(await uploadFile(file));
+      }
+      setGalleryUrls((current) => [...current, ...uploaded]);
+    } catch {
+      setError("לא ניתן להעלות את התמונות. נסו JPEG, PNG, WebP או GIF עד 4MB.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!imageUrl) {
+      setError("יש להעלות תמונה ראשית או להזין כתובת.");
+      return;
+    }
     setPending(true);
     setError("");
     const form = new FormData(event.currentTarget);
@@ -23,7 +86,8 @@ export function ProductForm({ productId, defaultValues }: Props) {
       name: String(form.get("name") ?? ""),
       slug: String(form.get("slug") ?? ""),
       description: String(form.get("description") ?? ""),
-      imageUrl: String(form.get("imageUrl") ?? ""),
+      imageUrl,
+      galleryUrls,
       fabricShape: String(form.get("fabricShape") ?? "standard"),
       priceLargeShekels: Number(form.get("priceLargeShekels") || 0),
       priceSmallShekels: Number(form.get("priceSmallShekels") || 0),
@@ -73,7 +137,71 @@ export function ProductForm({ productId, defaultValues }: Props) {
           className="w-full rounded-md border border-[var(--line)] px-3 py-2"
         />
       </label>
-      <Field name="imageUrl" label="כתובת תמונה או נתיב /images/..." defaultValue={defaultValues?.imageUrl} required />
+
+      <div className="space-y-3 rounded-md border border-[var(--line)] p-4">
+        <p className="font-medium">תמונה ראשית</p>
+        {imageUrl ? (
+          <img src={imageUrl} alt="" className="h-48 w-full rounded-md object-contain bg-[var(--paper)]" />
+        ) : (
+          <div className="flex h-48 items-center justify-center rounded-md bg-[var(--paper)] text-sm text-[var(--muted)]">
+            אין תמונה עדיין
+          </div>
+        )}
+        <label className="block space-y-1">
+          <span>העלאה או החלפה</span>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={onMainImage}
+            disabled={uploading}
+            className="w-full text-sm"
+          />
+        </label>
+        <label className="block space-y-1">
+          <span>או כתובת קיימת</span>
+          <input
+            type="text"
+            value={imageUrl}
+            onChange={(event) => setImageUrl(event.target.value)}
+            placeholder="/images/products/... או https://"
+            className="w-full rounded-md border border-[var(--line)] px-3 py-2"
+          />
+        </label>
+      </div>
+
+      <div className="space-y-3 rounded-md border border-[var(--line)] p-4">
+        <p className="font-medium">תמונות נוספות</p>
+        {galleryUrls.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {galleryUrls.map((url) => (
+              <div key={url} className="space-y-2">
+                <img src={url} alt="" className="h-28 w-full rounded-md object-contain bg-[var(--paper)]" />
+                <button
+                  type="button"
+                  className="text-sm text-red-700"
+                  onClick={() => setGalleryUrls((current) => current.filter((item) => item !== url))}
+                >
+                  הסרה
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--muted)]">אפשר להוסיף עוד זוויות או תמונות אווירה.</p>
+        )}
+        <label className="block space-y-1">
+          <span>הוספת תמונות</span>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            onChange={onGalleryImages}
+            disabled={uploading || galleryUrls.length >= 8}
+            className="w-full text-sm"
+          />
+        </label>
+      </div>
+
       <label className="block space-y-1">
         <span>צורת בד</span>
         <select
@@ -99,8 +227,9 @@ export function ProductForm({ productId, defaultValues }: Props) {
         מוצג בולט
       </label>
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {uploading ? <p className="text-sm text-[var(--muted)]">מעלה תמונה…</p> : null}
       <div className="flex gap-3">
-        <button type="submit" className="btn-primary" disabled={pending}>
+        <button type="submit" className="btn-primary" disabled={pending || uploading}>
           שמירה
         </button>
         {productId ? (

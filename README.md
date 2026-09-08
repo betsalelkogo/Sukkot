@@ -19,8 +19,7 @@ cp .env.example .env.local
 מלאו את `.env.local`, ואז:
 
 ```bash
-# יצירת hash לסיסמת ניהול
-npx tsx -e "import bcrypt from 'bcryptjs'; bcrypt.hash('YOUR_LONG_PASSWORD', 12).then(console.log)"
+# סיסמת ניהול: ממלאים ADMIN_EMAIL ו-ADMIN_PASSWORD ב-.env.local
 
 # יצירת טבלאות ב-Neon
 npm run db:push
@@ -64,6 +63,7 @@ npm run dev
 ## אבטחה
 
 - הסיסמה נשמרת כ-bcrypt (עלות 12), לא בטקסט גלוי
+- סשן הניהול נחתם ממפתח שנגזר מפרטי הכניסה — אין צורך ב-SESSION_SECRET
 - סשן הניהול הוא JWT ל-15 דקות, בעוגייה HttpOnly / Secure / SameSite=Strict
 - מחירי הלקוח לא נסמכים עליהם: המחיר נשלף מחדש מ-Neon בקופה
 - ה-webhook של Morning נבדק עם `?token=` ואז מאומת מול מסמך Morning

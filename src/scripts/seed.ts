@@ -26,12 +26,14 @@ async function seed() {
       .insert(products)
       .values({
         ...product,
+        galleryUrls: "[]",
         inStock: true,
       })
       .onConflictDoNothing({ target: products.slug });
   }
 
-  console.log("Seed completed");
+  const rows = await db.select({ slug: products.slug }).from(products);
+  console.log(`Seed completed: ${rows.length} products in database`);
 }
 
 seed().catch((error) => {

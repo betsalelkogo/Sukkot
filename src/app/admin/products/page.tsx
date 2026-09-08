@@ -16,6 +16,7 @@ export default async function AdminProductsPage() {
         <table className="w-full text-right text-sm">
           <thead className="bg-[var(--paper)]">
             <tr>
+              <th className="p-3">תמונה</th>
               <th className="p-3">שם</th>
               <th className="p-3">בד גדול</th>
               <th className="p-3">מנויילן</th>
@@ -26,6 +27,9 @@ export default async function AdminProductsPage() {
           <tbody>
             {productList.map((product) => (
               <tr key={product.id} className="border-t border-[var(--line)]">
+                <td className="p-3">
+                  <img src={product.imageUrl} alt="" className="h-14 w-14 rounded object-contain bg-[var(--paper)]" />
+                </td>
                 <td className="p-3">{product.name}</td>
                 <td className="p-3">
                   {product.priceLargeAgorot

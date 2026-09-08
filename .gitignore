@@ -18,3 +18,5 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+public/uploads/*
+!public/uploads/.gitkeep
