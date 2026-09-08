@@ -20,7 +20,7 @@ type CartContextValue = {
   subtotalAgorot: number;
   discountAgorot: number;
   totalAgorot: number;
-  remainingFor: (productId: string, stockQuantity: number, variant?: ProductVariant) => number;
+  remainingFor: (productId: string, variant: ProductVariant, stockQuantity: number) => number;
   addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   updateQuantity: (productId: string, variant: ProductVariant, quantity: number) => void;
   removeItem: (productId: string, variant: ProductVariant) => void;
@@ -28,16 +28,16 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "sukkot-cart-v3";
+const STORAGE_KEY = "sukkot-cart-v4";
 
-function remainingForProduct(
+function remainingForVariant(
   items: CartItem[],
   productId: string,
+  variant: ProductVariant,
   stockQuantity: number,
-  exceptVariant?: ProductVariant,
 ) {
   const used = items
-    .filter((row) => row.productId === productId && row.variant !== exceptVariant)
+    .filter((row) => row.productId === productId && row.variant === variant)
     .reduce((sum, row) => sum + row.quantity, 0);
   return Math.max(0, stockQuantity - used);
 }
@@ -72,11 +72,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       subtotalAgorot,
       discountAgorot,
       totalAgorot: subtotalAgorot - discountAgorot,
-      remainingFor: (productId, stockQuantity, variant) =>
-        remainingForProduct(items, productId, stockQuantity, variant),
+      remainingFor: (productId, variant, stockQuantity) =>
+        remainingForVariant(items, productId, variant, stockQuantity),
       addItem: (item, quantity = 1) => {
         setItems((current) => {
-          const room = remainingForProduct(current, item.productId, item.stockQuantity);
+          const room = remainingForVariant(current, item.productId, item.variant, item.stockQuantity);
           const nextQty = Math.min(quantity, room);
           if (nextQty <= 0) {
             return current;
@@ -101,8 +101,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               if (row.productId !== productId || row.variant !== variant) {
                 return row;
               }
-              const max = remainingForProduct(current, productId, row.stockQuantity, variant);
-              return { ...row, quantity: Math.min(max, Math.max(0, quantity)) };
+              return { ...row, quantity: Math.min(row.stockQuantity, Math.max(0, quantity)) };
             })
             .filter((row) => row.quantity > 0),
         );

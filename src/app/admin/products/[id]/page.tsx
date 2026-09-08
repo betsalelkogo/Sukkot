@@ -33,7 +33,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           priceSmallShekels: agorotToShekels(product.priceSmallAgorot ?? 0),
           priceSquareShekels: agorotToShekels(product.priceSquareAgorot ?? 0),
           laminatedA3Price: agorotToShekels(product.priceLaminatedAgorot),
-          stockQuantity: product.stockQuantity,
+          stockLarge: product.stockLarge,
+          stockSmall: product.stockSmall,
+          stockSquare: product.stockSquare,
+          stockLaminated: product.stockLaminated,
           featured: product.featured,
           sortOrder: product.sortOrder,
         }}

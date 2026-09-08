@@ -55,6 +55,31 @@ export function startingPriceAgorot(product: {
   return Math.min(...prices);
 }
 
+export type StockedProduct = {
+  priceLargeAgorot: number | null;
+  priceSmallAgorot: number | null;
+  priceSquareAgorot: number | null;
+  priceLaminatedAgorot: number;
+  stockLarge: number;
+  stockSmall: number;
+  stockSquare: number;
+  stockLaminated: number;
+};
+
+export function stockForVariant(product: StockedProduct, variant: ProductVariant) {
+  if (variant === "fabric_large") return product.stockLarge;
+  if (variant === "fabric_small") return product.stockSmall;
+  if (variant === "fabric_square") return product.stockSquare;
+  return product.stockLaminated;
+}
+
+export function hasAnyStock(product: StockedProduct) {
+  return VARIANTS.some((variant) => {
+    const price = priceForVariant(product, variant);
+    return Boolean(price) && stockForVariant(product, variant) > 0;
+  });
+}
+
 export function priceForVariant(
   product: {
     priceLargeAgorot: number | null;

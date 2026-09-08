@@ -2,6 +2,7 @@ import { asc, desc, eq } from "drizzle-orm";
 import { DEFAULT_CONTENT, SAMPLE_PRODUCTS } from "./defaults";
 import { getDb } from "./db";
 import { parseGallery } from "./images";
+import { hasAnyStock } from "./pricing";
 import { orderItems, orders, products, siteContent } from "./schema";
 
 export type ProductRecord = {
@@ -16,29 +17,45 @@ export type ProductRecord = {
   priceSmallAgorot: number | null;
   priceSquareAgorot: number | null;
   priceLaminatedAgorot: number;
-  stockQuantity: number;
+  stockLarge: number;
+  stockSmall: number;
+  stockSquare: number;
+  stockLaminated: number;
   inStock: boolean;
   featured: boolean;
   sortOrder: number;
 };
 
 function asRecord(
-  product: Omit<ProductRecord, "id" | "inStock" | "galleryUrls" | "stockQuantity"> & {
+  product: Omit<
+    ProductRecord,
+    "id" | "inStock" | "galleryUrls" | "stockLarge" | "stockSmall" | "stockSquare" | "stockLaminated"
+  > & {
     id?: string;
     inStock?: boolean;
     galleryUrls?: string[];
-    stockQuantity?: number;
+    stockLarge?: number;
+    stockSmall?: number;
+    stockSquare?: number;
+    stockLaminated?: number;
   },
   index: number,
 ): ProductRecord {
-  const stockQuantity = product.stockQuantity ?? 10;
-  return {
+  const stockLarge = product.stockLarge ?? (product.fabricShape === "square" ? 0 : 10);
+  const stockSmall = product.stockSmall ?? (product.fabricShape === "square" ? 0 : 10);
+  const stockSquare = product.stockSquare ?? (product.fabricShape === "square" ? 10 : 0);
+  const stockLaminated = product.stockLaminated ?? 10;
+  const record = {
     ...product,
     id: product.id ?? `sample-${index + 1}`,
-    stockQuantity,
-    inStock: (product.inStock ?? true) && stockQuantity > 0,
+    stockLarge,
+    stockSmall,
+    stockSquare,
+    stockLaminated,
     galleryUrls: product.galleryUrls ?? [],
+    inStock: false,
   };
+  return { ...record, inStock: hasAnyStock(record) };
 }
 
 function fromRow(row: typeof products.$inferSelect): ProductRecord {
@@ -54,8 +71,11 @@ function fromRow(row: typeof products.$inferSelect): ProductRecord {
     priceSmallAgorot: row.priceSmallAgorot,
     priceSquareAgorot: row.priceSquareAgorot,
     priceLaminatedAgorot: row.priceLaminatedAgorot,
-    stockQuantity: row.stockQuantity,
-    inStock: row.inStock && row.stockQuantity > 0,
+    stockLarge: row.stockLarge,
+    stockSmall: row.stockSmall,
+    stockSquare: row.stockSquare,
+    stockLaminated: row.stockLaminated,
+    inStock: hasAnyStock(row),
     featured: row.featured,
     sortOrder: row.sortOrder,
   };

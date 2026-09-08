@@ -6,8 +6,7 @@ import { PAIR_DEALS, VARIANT_LABEL } from "@/lib/pricing";
 import { useCart } from "./CartProvider";
 
 export function CartView() {
-  const { items, subtotalAgorot, discountAgorot, totalAgorot, remainingFor, updateQuantity, removeItem } =
-    useCart();
+  const { items, subtotalAgorot, discountAgorot, totalAgorot, updateQuantity, removeItem } = useCart();
 
   if (items.length === 0) {
     return (
@@ -38,7 +37,7 @@ export function CartView() {
             <input
               type="number"
               min={1}
-              max={remainingFor(item.productId, item.stockQuantity, item.variant)}
+              max={item.stockQuantity}
               value={item.quantity}
               onChange={(event) =>
                 updateQuantity(item.productId, item.variant, Number(event.target.value))

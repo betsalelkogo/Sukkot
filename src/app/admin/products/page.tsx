@@ -1,6 +1,21 @@
 import Link from "next/link";
 import { formatIls } from "@/lib/money";
+import { priceForVariant, stockForVariant, type ProductVariant } from "@/lib/pricing";
 import { getProducts } from "@/lib/queries";
+
+function stockSummary(product: Awaited<ReturnType<typeof getProducts>>[number]) {
+  const parts = (
+    [
+      ["fabric_large", "גדול"],
+      ["fabric_small", "קטן"],
+      ["fabric_square", "50×50"],
+      ["laminated", "A3"],
+    ] as const
+  )
+    .filter(([variant]) => priceForVariant(product, variant as ProductVariant))
+    .map(([variant, label]) => `${label} ${stockForVariant(product, variant)}`);
+  return parts.length ? parts.join(" · ") : "אזל";
+}
 
 export default async function AdminProductsPage() {
   const productList = await getProducts();
@@ -39,7 +54,7 @@ export default async function AdminProductsPage() {
                       : "-"}
                 </td>
                 <td className="p-3">{formatIls(product.priceLaminatedAgorot)}</td>
-                <td className="p-3">{product.stockQuantity > 0 ? product.stockQuantity : "אזל"}</td>
+                <td className="p-3">{stockSummary(product)}</td>
                 <td className="p-3">
                   <Link href={`/admin/products/${product.id}`} className="text-[var(--teal)]">
                     עריכה

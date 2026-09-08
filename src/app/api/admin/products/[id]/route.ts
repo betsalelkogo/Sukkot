@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { requireDb } from "@/lib/db";
 import { shekelsToAgorot } from "@/lib/money";
+import { hasAnyStock } from "@/lib/pricing";
 import { products } from "@/lib/schema";
 import { productSchema } from "@/lib/validations";
 
@@ -42,8 +43,20 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         priceSmallAgorot: values.priceSmallShekels > 0 ? shekelsToAgorot(values.priceSmallShekels) : null,
         priceSquareAgorot: values.priceSquareShekels > 0 ? shekelsToAgorot(values.priceSquareShekels) : null,
         priceLaminatedAgorot: shekelsToAgorot(values.laminatedA3Price),
-        stockQuantity: values.stockQuantity,
-        inStock: values.stockQuantity > 0,
+        stockLarge: values.stockLarge,
+        stockSmall: values.stockSmall,
+        stockSquare: values.stockSquare,
+        stockLaminated: values.stockLaminated,
+        inStock: hasAnyStock({
+          priceLargeAgorot: values.priceLargeShekels > 0 ? shekelsToAgorot(values.priceLargeShekels) : null,
+          priceSmallAgorot: values.priceSmallShekels > 0 ? shekelsToAgorot(values.priceSmallShekels) : null,
+          priceSquareAgorot: values.priceSquareShekels > 0 ? shekelsToAgorot(values.priceSquareShekels) : null,
+          priceLaminatedAgorot: shekelsToAgorot(values.laminatedA3Price),
+          stockLarge: values.stockLarge,
+          stockSmall: values.stockSmall,
+          stockSquare: values.stockSquare,
+          stockLaminated: values.stockLaminated,
+        }),
         featured: values.featured,
         sortOrder: values.sortOrder,
         updatedAt: new Date(),

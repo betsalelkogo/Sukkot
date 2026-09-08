@@ -27,7 +27,10 @@ async function seed() {
       .values({
         ...product,
         galleryUrls: "[]",
-        stockQuantity: 10,
+        stockLarge: product.fabricShape === "square" ? 0 : 10,
+        stockSmall: product.fabricShape === "square" ? 0 : 10,
+        stockSquare: product.fabricShape === "square" ? 10 : 0,
+        stockLaminated: 10,
         inStock: true,
       })
       .onConflictDoNothing({ target: products.slug });

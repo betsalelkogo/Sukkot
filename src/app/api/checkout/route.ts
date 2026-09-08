@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { requireDb } from "@/lib/db";
 import { createPaymentForm, isMorningConfigured } from "@/lib/morning";
 import { agorotToShekels } from "@/lib/money";
-import { dealDiscountAgorot, priceForVariant, VARIANT_LABEL, type ProductVariant } from "@/lib/pricing";
+import { dealDiscountAgorot, priceForVariant, stockForVariant, VARIANT_LABEL, type ProductVariant } from "@/lib/pricing";
 import { rateLimit } from "@/lib/rate-limit";
 import { orderItems, orders, products } from "@/lib/schema";
 import { releaseStock, reserveStock } from "@/lib/stock";
@@ -46,16 +46,17 @@ export async function POST(request: Request) {
   try {
     const pricedItems = input.items.map((item) => {
       const product = catalog.find((row) => row.id === item.productId);
-      if (!product || !product.inStock || product.stockQuantity <= 0) {
+      const variant = item.variant as ProductVariant;
+      if (!product) {
         throw new Error("UNAVAILABLE");
       }
-      const unitPriceAgorot = priceForVariant(product, item.variant as ProductVariant);
-      if (!unitPriceAgorot) {
+      const unitPriceAgorot = priceForVariant(product, variant);
+      if (!unitPriceAgorot || stockForVariant(product, variant) < item.quantity) {
         throw new Error("UNAVAILABLE");
       }
       return {
         product,
-        variant: item.variant,
+        variant,
         quantity: item.quantity,
         unitPriceAgorot,
       };
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
 
     const reservation = pricedItems.map((item) => ({
       productId: item.product.id,
+      variant: item.variant,
       quantity: item.quantity,
     }));
     const reserved = await reserveStock(db, reservation);

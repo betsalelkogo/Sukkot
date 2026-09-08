@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatIls } from "@/lib/money";
-import { startingPriceAgorot } from "@/lib/pricing";
+import { hasAnyStock, startingPriceAgorot } from "@/lib/pricing";
 import type { ProductRecord } from "@/lib/queries";
 
 export function ProductCard({ product }: { product: ProductRecord }) {
@@ -17,7 +17,7 @@ export function ProductCard({ product }: { product: ProductRecord }) {
         <p className="min-h-12 text-sm text-[var(--muted)]">{product.description}</p>
         <p className="text-sm">מ-{formatIls(startingPriceAgorot(product))}</p>
         <p className="text-sm text-[var(--muted)]">
-          {product.stockQuantity > 0 ? `${product.stockQuantity} במלאי` : "אזל מהמלאי"}
+          {hasAnyStock(product) ? "יש במלאי" : "אזל מהמלאי"}
         </p>
         <Link href={`/product/${product.slug}`} className="btn-primary w-full">
           לרכישה

@@ -93,7 +93,10 @@ export function ProductForm({ productId, defaultValues }: Props) {
       priceSmallShekels: Number(form.get("priceSmallShekels") || 0),
       priceSquareShekels: Number(form.get("priceSquareShekels") || 0),
       laminatedA3Price: Number(form.get("laminatedA3Price")),
-      stockQuantity: Number(form.get("stockQuantity") || 0),
+      stockLarge: Number(form.get("stockLarge") || 0),
+      stockSmall: Number(form.get("stockSmall") || 0),
+      stockSquare: Number(form.get("stockSquare") || 0),
+      stockLaminated: Number(form.get("stockLaminated") || 0),
       featured: form.get("featured") === "on",
       sortOrder: Number(form.get("sortOrder") || 0),
     };
@@ -214,17 +217,14 @@ export function ProductForm({ productId, defaultValues }: Props) {
         </select>
       </label>
       <Field name="priceLargeShekels" label="מחיר בד גדול 50×70 (0 אם אין)" type="number" defaultValue={defaultValues?.priceLargeShekels ?? 0} />
+      <Field name="stockLarge" label="מלאי בד גדול" type="number" defaultValue={defaultValues?.stockLarge ?? 10} />
       <Field name="priceSmallShekels" label="מחיר בד קטן 35×50 (0 אם אין)" type="number" defaultValue={defaultValues?.priceSmallShekels ?? 0} />
+      <Field name="stockSmall" label="מלאי בד קטן" type="number" defaultValue={defaultValues?.stockSmall ?? 10} />
       <Field name="priceSquareShekels" label="מחיר בד 50×50 (0 אם אין)" type="number" defaultValue={defaultValues?.priceSquareShekels ?? 0} />
+      <Field name="stockSquare" label="מלאי בד 50×50" type="number" defaultValue={defaultValues?.stockSquare ?? 0} />
       <Field name="laminatedA3Price" label="מחיר מנויילן A3" type="number" defaultValue={defaultValues?.laminatedA3Price} required />
+      <Field name="stockLaminated" label="מלאי מנויילן A3" type="number" defaultValue={defaultValues?.stockLaminated ?? 10} />
       <Field name="sortOrder" label="סדר תצוגה" type="number" defaultValue={defaultValues?.sortOrder ?? 0} />
-      <Field
-        name="stockQuantity"
-        label="כמות במלאי"
-        type="number"
-        defaultValue={defaultValues?.stockQuantity ?? 10}
-        required
-      />
       <label className="flex items-center gap-2">
         <input type="checkbox" name="featured" defaultChecked={defaultValues?.featured ?? false} />
         מוצג בולט

@@ -52,7 +52,10 @@ export const productSchema = z.object({
   priceSmallShekels: z.number().min(0).max(20000),
   priceSquareShekels: z.number().min(0).max(20000),
   laminatedA3Price: z.number().positive().max(20000),
-  stockQuantity: z.number().int().min(0).max(9999),
+  stockLarge: z.number().int().min(0).max(9999),
+  stockSmall: z.number().int().min(0).max(9999),
+  stockSquare: z.number().int().min(0).max(9999),
+  stockLaminated: z.number().int().min(0).max(9999),
   featured: z.boolean(),
   sortOrder: z.number().int().min(0).max(9999),
 });
