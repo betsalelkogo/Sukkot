@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { formatIls } from "@/lib/money";
-import { SalePrice } from "@/components/SalePrice";
 import { PAIR_DEALS, VARIANT_LABEL } from "@/lib/pricing";
 import { useCart } from "./CartProvider";
 
@@ -32,9 +31,7 @@ export function CartView() {
           <div className="flex-1">
             <h2 className="text-lg font-semibold">{item.name}</h2>
             <p className="text-sm text-[var(--muted)]">{item.variantLabel || VARIANT_LABEL[item.variant]}</p>
-            <p>
-              <SalePrice agorot={item.unitPriceAgorot} />
-            </p>
+            <p>{formatIls(item.unitPriceAgorot)}</p>
           </div>
           <div className="flex items-center gap-3">
             <input

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DealPopup } from "@/components/DealPopup";
-import { SalePrice } from "@/components/SalePrice";
+import { formatIls } from "@/lib/money";
 import { DEAL_GROUP, offeredVariants, priceForVariant, stockForVariant, variantLabel, type ProductVariant } from "@/lib/pricing";
 import type { ProductRecord } from "@/lib/queries";
 import { useCart } from "./CartProvider";
@@ -43,9 +43,7 @@ export function AddToCart({ product }: { product: ProductRecord }) {
                   <span className="mt-1 block text-sm text-[var(--muted)]">אזל מהמלאי</span>
                 ) : null}
               </span>
-              <span className="ms-auto text-sm">
-                <SalePrice agorot={priceForVariant(product, option) ?? 0} align="end" />
-              </span>
+              <span className="ms-auto font-semibold">{formatIls(priceForVariant(product, option) ?? 0)}</span>
             </label>
           );
         })}
