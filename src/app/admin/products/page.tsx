@@ -39,7 +39,7 @@ export default async function AdminProductsPage() {
                       : "-"}
                 </td>
                 <td className="p-3">{formatIls(product.priceLaminatedAgorot)}</td>
-                <td className="p-3">{product.inStock ? "במלאי" : "אזל"}</td>
+                <td className="p-3">{product.stockQuantity > 0 ? product.stockQuantity : "אזל"}</td>
                 <td className="p-3">
                   <Link href={`/admin/products/${product.id}`} className="text-[var(--teal)]">
                     עריכה

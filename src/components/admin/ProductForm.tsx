@@ -93,7 +93,7 @@ export function ProductForm({ productId, defaultValues }: Props) {
       priceSmallShekels: Number(form.get("priceSmallShekels") || 0),
       priceSquareShekels: Number(form.get("priceSquareShekels") || 0),
       laminatedA3Price: Number(form.get("laminatedA3Price")),
-      inStock: form.get("inStock") === "on",
+      stockQuantity: Number(form.get("stockQuantity") || 0),
       featured: form.get("featured") === "on",
       sortOrder: Number(form.get("sortOrder") || 0),
     };
@@ -218,10 +218,13 @@ export function ProductForm({ productId, defaultValues }: Props) {
       <Field name="priceSquareShekels" label="מחיר בד 50×50 (0 אם אין)" type="number" defaultValue={defaultValues?.priceSquareShekels ?? 0} />
       <Field name="laminatedA3Price" label="מחיר מנויילן A3" type="number" defaultValue={defaultValues?.laminatedA3Price} required />
       <Field name="sortOrder" label="סדר תצוגה" type="number" defaultValue={defaultValues?.sortOrder ?? 0} />
-      <label className="flex items-center gap-2">
-        <input type="checkbox" name="inStock" defaultChecked={defaultValues?.inStock ?? true} />
-        במלאי
-      </label>
+      <Field
+        name="stockQuantity"
+        label="כמות במלאי"
+        type="number"
+        defaultValue={defaultValues?.stockQuantity ?? 10}
+        required
+      />
       <label className="flex items-center gap-2">
         <input type="checkbox" name="featured" defaultChecked={defaultValues?.featured ?? false} />
         מוצג בולט

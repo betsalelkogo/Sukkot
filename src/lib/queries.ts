@@ -16,23 +16,27 @@ export type ProductRecord = {
   priceSmallAgorot: number | null;
   priceSquareAgorot: number | null;
   priceLaminatedAgorot: number;
+  stockQuantity: number;
   inStock: boolean;
   featured: boolean;
   sortOrder: number;
 };
 
 function asRecord(
-  product: Omit<ProductRecord, "id" | "inStock" | "galleryUrls"> & {
+  product: Omit<ProductRecord, "id" | "inStock" | "galleryUrls" | "stockQuantity"> & {
     id?: string;
     inStock?: boolean;
     galleryUrls?: string[];
+    stockQuantity?: number;
   },
   index: number,
 ): ProductRecord {
+  const stockQuantity = product.stockQuantity ?? 10;
   return {
     ...product,
     id: product.id ?? `sample-${index + 1}`,
-    inStock: product.inStock ?? true,
+    stockQuantity,
+    inStock: (product.inStock ?? true) && stockQuantity > 0,
     galleryUrls: product.galleryUrls ?? [],
   };
 }
@@ -50,7 +54,8 @@ function fromRow(row: typeof products.$inferSelect): ProductRecord {
     priceSmallAgorot: row.priceSmallAgorot,
     priceSquareAgorot: row.priceSquareAgorot,
     priceLaminatedAgorot: row.priceLaminatedAgorot,
-    inStock: row.inStock,
+    stockQuantity: row.stockQuantity,
+    inStock: row.inStock && row.stockQuantity > 0,
     featured: row.featured,
     sortOrder: row.sortOrder,
   };

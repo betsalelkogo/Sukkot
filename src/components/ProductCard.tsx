@@ -16,6 +16,9 @@ export function ProductCard({ product }: { product: ProductRecord }) {
         <h3 className="text-xl font-semibold">{product.name}</h3>
         <p className="min-h-12 text-sm text-[var(--muted)]">{product.description}</p>
         <p className="text-sm">מ-{formatIls(startingPriceAgorot(product))}</p>
+        <p className="text-sm text-[var(--muted)]">
+          {product.stockQuantity > 0 ? `${product.stockQuantity} במלאי` : "אזל מהמלאי"}
+        </p>
         <Link href={`/product/${product.slug}`} className="btn-primary w-full">
           לרכישה
         </Link>

@@ -27,6 +27,7 @@ async function seed() {
       .values({
         ...product,
         galleryUrls: "[]",
+        stockQuantity: 10,
         inStock: true,
       })
       .onConflictDoNothing({ target: products.slug });

@@ -36,7 +36,8 @@ export async function POST(request: Request) {
         priceSmallAgorot: toAgorot(values.priceSmallShekels),
         priceSquareAgorot: toAgorot(values.priceSquareShekels),
         priceLaminatedAgorot: shekelsToAgorot(values.laminatedA3Price),
-        inStock: values.inStock,
+        stockQuantity: values.stockQuantity,
+        inStock: values.stockQuantity > 0,
         featured: values.featured,
         sortOrder: values.sortOrder,
       })

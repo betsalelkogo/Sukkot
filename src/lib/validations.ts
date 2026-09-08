@@ -15,7 +15,7 @@ export const checkoutSchema = z.object({
       z.object({
         productId: z.string().uuid(),
         variant: z.enum(["fabric_large", "fabric_small", "fabric_square", "laminated"]),
-        quantity: z.number().int().min(1).max(20),
+        quantity: z.number().int().min(1).max(99),
       }),
     )
     .min(1)
@@ -52,7 +52,7 @@ export const productSchema = z.object({
   priceSmallShekels: z.number().min(0).max(20000),
   priceSquareShekels: z.number().min(0).max(20000),
   laminatedA3Price: z.number().positive().max(20000),
-  inStock: z.boolean(),
+  stockQuantity: z.number().int().min(0).max(9999),
   featured: z.boolean(),
   sortOrder: z.number().int().min(0).max(9999),
 });

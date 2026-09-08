@@ -1,4 +1,4 @@
-import { inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { requireDb } from "@/lib/db";
 import { createPaymentForm, isMorningConfigured } from "@/lib/morning";
@@ -6,6 +6,7 @@ import { agorotToShekels } from "@/lib/money";
 import { dealDiscountAgorot, priceForVariant, VARIANT_LABEL, type ProductVariant } from "@/lib/pricing";
 import { rateLimit } from "@/lib/rate-limit";
 import { orderItems, orders, products } from "@/lib/schema";
+import { releaseStock, reserveStock } from "@/lib/stock";
 import { checkoutSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
   try {
     const pricedItems = input.items.map((item) => {
       const product = catalog.find((row) => row.id === item.productId);
-      if (!product || !product.inStock) {
+      if (!product || !product.inStock || product.stockQuantity <= 0) {
         throw new Error("UNAVAILABLE");
       }
       const unitPriceAgorot = priceForVariant(product, item.variant as ProductVariant);
@@ -67,59 +68,81 @@ export async function POST(request: Request) {
     const discountAgorot = dealDiscountAgorot(pricedItems);
     const totalAgorot = subtotalAgorot - discountAgorot;
 
-    const [order] = await db
-      .insert(orders)
-      .values({
-        customerName: input.customerName,
-        customerEmail: input.customerEmail,
-        customerPhone: input.customerPhone,
-        address: input.address,
-        city: input.city,
-        notes: input.notes || null,
-        status: "pending",
-        totalAgorot,
-      })
-      .returning();
-
-    await db.insert(orderItems).values(
-      pricedItems.map((item) => ({
-        orderId: order.id,
-        productId: item.product.id,
-        productName: item.product.name,
-        variant: item.variant,
-        quantity: item.quantity,
-        unitPriceAgorot: item.unitPriceAgorot,
-      })),
-    );
-
-    const income = pricedItems.map((item) => ({
-      description: `${item.product.name} — ${VARIANT_LABEL[item.variant]}`,
+    const reservation = pricedItems.map((item) => ({
+      productId: item.product.id,
       quantity: item.quantity,
-      price: agorotToShekels(item.unitPriceAgorot),
-      currency: "ILS" as const,
-      vatType: 1 as const,
     }));
-    if (discountAgorot > 0) {
-      income.push({
-        description: "הנחת מבצע זוגות",
-        quantity: 1,
-        price: -agorotToShekels(discountAgorot),
-        currency: "ILS",
-        vatType: 1,
-      });
+    const reserved = await reserveStock(db, reservation);
+    if (!reserved) {
+      return NextResponse.json({ error: "אין מספיק מלאי לאחד המוצרים." }, { status: 409 });
     }
 
-    const paymentUrl = await createPaymentForm({
-      orderId: order.id,
-      description: `הזמנה ${order.id.slice(0, 8)}`,
-      amount: agorotToShekels(totalAgorot),
-      clientName: input.customerName,
-      clientEmail: input.customerEmail,
-      clientPhone: input.customerPhone,
-      income,
-    });
+    let createdOrderId: string | undefined;
+    try {
+      const [order] = await db
+        .insert(orders)
+        .values({
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone,
+          address: input.address,
+          city: input.city,
+          notes: input.notes || null,
+          status: "pending",
+          totalAgorot,
+        })
+        .returning();
+      createdOrderId = order.id;
 
-    return NextResponse.json({ url: paymentUrl });
+      await db.insert(orderItems).values(
+        pricedItems.map((item) => ({
+          orderId: order.id,
+          productId: item.product.id,
+          productName: item.product.name,
+          variant: item.variant,
+          quantity: item.quantity,
+          unitPriceAgorot: item.unitPriceAgorot,
+        })),
+      );
+
+      const income = pricedItems.map((item) => ({
+        description: `${item.product.name} — ${VARIANT_LABEL[item.variant]}`,
+        quantity: item.quantity,
+        price: agorotToShekels(item.unitPriceAgorot),
+        currency: "ILS" as const,
+        vatType: 1 as const,
+      }));
+      if (discountAgorot > 0) {
+        income.push({
+          description: "הנחת מבצע זוגות",
+          quantity: 1,
+          price: -agorotToShekels(discountAgorot),
+          currency: "ILS",
+          vatType: 1,
+        });
+      }
+
+      const paymentUrl = await createPaymentForm({
+        orderId: order.id,
+        description: `הזמנה ${order.id.slice(0, 8)}`,
+        amount: agorotToShekels(totalAgorot),
+        clientName: input.customerName,
+        clientEmail: input.customerEmail,
+        clientPhone: input.customerPhone,
+        income,
+      });
+
+      return NextResponse.json({ url: paymentUrl });
+    } catch {
+      await releaseStock(db, reservation);
+      if (createdOrderId) {
+        await db
+          .update(orders)
+          .set({ status: "failed", updatedAt: new Date() })
+          .where(eq(orders.id, createdOrderId));
+      }
+      throw new Error("CHECKOUT");
+    }
   } catch (error) {
     if (error instanceof Error && error.message === "UNAVAILABLE") {
       return NextResponse.json({ error: "אחד המוצרים אינו זמין." }, { status: 400 });

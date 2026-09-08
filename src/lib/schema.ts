@@ -20,6 +20,7 @@ export const products = pgTable("products", {
   priceSmallAgorot: integer("price_small_agorot"),
   priceSquareAgorot: integer("price_square_agorot"),
   priceLaminatedAgorot: integer("price_laminated_agorot").notNull(),
+  stockQuantity: integer("stock_quantity").notNull().default(10),
   inStock: boolean("in_stock").notNull().default(true),
   featured: boolean("featured").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),

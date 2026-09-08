@@ -3,6 +3,7 @@ import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { orders } from "@/lib/schema";
+import { releaseOrdersStock } from "@/lib/stock";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,11 @@ export async function GET(request: Request) {
     .set({ status: "expired", updatedAt: new Date() })
     .where(and(eq(orders.status, "pending"), lt(orders.createdAt, cutoff)))
     .returning({ id: orders.id });
+
+  await releaseOrdersStock(
+    db,
+    expired.map((order) => order.id),
+  );
 
   return NextResponse.json({ expired: expired.length });
 }
