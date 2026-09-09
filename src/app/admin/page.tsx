@@ -22,7 +22,13 @@ export default async function AdminHomePage() {
         <p>
           מסד נתונים: {process.env.DATABASE_URL ? "מחובר" : "חסר DATABASE_URL"}
         </p>
-        <p>סליקה Morning: {isMorningConfigured() ? "מוגדרת" : "חסרים מפתחות"}</p>
+        <p>
+          סליקה Morning: {isMorningConfigured() ? "מוגדרת" : "חסרים מפתחות"}
+          {process.env.MORNING_ENV ? ` · ${process.env.MORNING_ENV}` : ""}
+          {process.env.MORNING_PLUGIN_ID
+            ? ` · פלאגין …${process.env.MORNING_PLUGIN_ID.slice(-6)}`
+            : ""}
+        </p>
         <p>כתובת האתר לתשלום: {process.env.NEXT_PUBLIC_SITE_URL ? "מוגדרת" : "חסרה"}</p>
       </div>
       <div className="flex gap-3">

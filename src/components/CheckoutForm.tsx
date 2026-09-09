@@ -11,7 +11,16 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [pickupPointId, setPickupPointId] = useState(pickupPoints[0]?.id ?? "");
+  const [pickupQuery, setPickupQuery] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const visiblePickupPoints = pickupPoints.filter((point) => {
+    const query = pickupQuery.trim();
+    if (!query) {
+      return true;
+    }
+    const haystack = `${point.name} ${point.details} ${point.hours ?? ""}`;
+    return haystack.includes(query);
+  });
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -78,7 +87,20 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
             עדיין לא הוגדרו נקודות איסוף. אפשר להוסיף אותן באזור הניהול.
           </p>
         ) : (
-          pickupPoints.map((point) => (
+          <>
+            <input
+              type="search"
+              value={pickupQuery}
+              onChange={(event) => setPickupQuery(event.target.value)}
+              placeholder="חיפוש לפי שם יישוב או נקודה"
+              className="w-full rounded-md border border-[var(--line)] px-3 py-2"
+            />
+            {visiblePickupPoints.length === 0 ? (
+              <p className="rounded-md bg-[var(--paper)] p-3 text-sm text-[var(--muted)]">
+                לא נמצאה נקודה מתאימה. נסו שם אחר.
+              </p>
+            ) : null}
+            {visiblePickupPoints.map((point) => (
             <label
               key={point.id}
               className="flex cursor-pointer items-start gap-3 rounded-md border border-[var(--line)] p-3"
@@ -95,7 +117,8 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
                 {point.hours ? <span className="mt-1 block text-sm text-[var(--muted)]">{point.hours}</span> : null}
               </span>
             </label>
-          ))
+            ))}
+          </>
         )}
       </fieldset>
       <label className="block space-y-1">

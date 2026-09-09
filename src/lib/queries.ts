@@ -159,10 +159,7 @@ export async function getPickupPoints(options?: { activeOnly?: boolean }): Promi
     return [];
   }
   try {
-    const rows = await db
-      .select()
-      .from(pickupPoints)
-      .orderBy(asc(pickupPoints.sortOrder), asc(pickupPoints.name));
+    const rows = await db.select().from(pickupPoints);
     return rows
       .filter((row) => (options?.activeOnly ? row.active : true))
       .map((row) => ({
@@ -172,7 +169,8 @@ export async function getPickupPoints(options?: { activeOnly?: boolean }): Promi
         hours: row.hours,
         sortOrder: row.sortOrder,
         active: row.active,
-      }));
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, "he"));
   } catch {
     return [];
   }

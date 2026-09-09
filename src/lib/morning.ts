@@ -1,5 +1,6 @@
 const TOKEN_CACHE_MS = 45 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 15_000;
+const PLUGIN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type EnvName = "sandbox" | "production";
 type TokenCache = { token: string; expiresAt: number; env: EnvName };
@@ -98,14 +99,11 @@ async function getAccessToken(): Promise<string> {
     throw new Error("Morning credentials are missing");
   }
 
-  const first = preferredEnv();
-  const order: EnvName[] = first === "production" ? ["production", "sandbox"] : ["sandbox", "production"];
-  for (const env of order) {
-    const token = await login(env, clientId, clientSecret);
-    if (token) {
-      tokenCache = { token, expiresAt: Date.now() + TOKEN_CACHE_MS, env };
-      return token;
-    }
+  const env = preferredEnv();
+  const token = await login(env, clientId, clientSecret);
+  if (token) {
+    tokenCache = { token, expiresAt: Date.now() + TOKEN_CACHE_MS, env };
+    return token;
   }
   throw new Error("Morning authentication failed");
 }
@@ -124,12 +122,60 @@ async function morningFetch(path: string, init: RequestInit) {
   return res;
 }
 
+function addPluginId(value: unknown, found: string[]) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      addPluginId(item, found);
+    }
+    return;
+  }
+  if (!value || typeof value !== "object") {
+    return;
+  }
+  const record = value as Record<string, unknown>;
+  if (typeof record.id === "string" && PLUGIN_ID.test(record.id) && !found.includes(record.id)) {
+    if ("paymentPlugins" in record || "pluginId" in record || "type" in record || "name" in record) {
+      found.push(record.id);
+    }
+  }
+  if (typeof record.pluginId === "string" && PLUGIN_ID.test(record.pluginId) && !found.includes(record.pluginId)) {
+    found.push(record.pluginId);
+  }
+  if (Array.isArray(record.paymentPlugins)) {
+    for (const plugin of record.paymentPlugins) {
+      const id = plugin && typeof plugin === "object" ? (plugin as { id?: unknown }).id : null;
+      if (typeof id === "string" && PLUGIN_ID.test(id) && !found.includes(id)) {
+        found.push(id);
+      }
+    }
+  }
+  for (const child of Object.values(record)) {
+    addPluginId(child, found);
+  }
+}
+
+async function listPaymentPluginIds() {
+  const found: string[] = [];
+  for (const path of ["/documents/info?type=320", "/documents/info?type=400"]) {
+    const res = await morningFetch(path, { method: "GET" });
+    if (!res.ok) {
+      continue;
+    }
+    addPluginId(await res.json(), found);
+  }
+  const configured = process.env.MORNING_PLUGIN_ID?.trim();
+  if (configured && PLUGIN_ID.test(configured) && !found.includes(configured)) {
+    found.push(configured);
+  }
+  return found;
+}
+
 export type PaymentLine = {
   description: string;
   quantity: number;
   price: number;
   currency: "ILS";
-  vatType: 1;
+  vatType: 1 | 2;
 };
 
 function applyDealToIncome(lines: PaymentLine[], amount: number) {
@@ -176,55 +222,73 @@ export async function createPaymentForm(input: {
   );
   const phone = input.clientPhone.replace(/\D/g, "");
   const normalizedPhone = phone.startsWith("0") ? phone : `0${phone}`;
+  const origin = siteUrl.replace(/\/$/, "");
+  const pluginIds = await listPaymentPluginIds();
+  const attempts = [
+    { type: 400, vatType: 2 },
+    { type: 400, vatType: 1 },
+    { type: 320, vatType: 1 },
+  ] as const;
+  let lastCode = "no_plugin";
 
-  const body = {
-    type: 320,
-    description: input.description,
-    amount: input.amount,
-    currency: "ILS",
-    lang: "he",
-    vatType: 1,
-    pluginId: process.env.MORNING_PLUGIN_ID,
-    group: 100,
-    maxPayments: 1,
-    client: {
-      name: input.clientName,
-      emails: [input.clientEmail],
-      phone: normalizedPhone,
-      add: true,
-    },
-    income,
-    successUrl: `${siteUrl.replace(/\/$/, "")}/order/success?order=${encodeURIComponent(input.orderId)}`,
-    failureUrl: `${siteUrl.replace(/\/$/, "")}/order/failed?order=${encodeURIComponent(input.orderId)}`,
-    notifyUrl: `${siteUrl.replace(/\/$/, "")}/api/webhooks/morning?token=${encodeURIComponent(webhookToken)}`,
-    custom: input.orderId,
-  };
+  for (const attempt of attempts) {
+    const lines = income.map((line) => ({ ...line, vatType: attempt.vatType }));
+    for (const pluginId of pluginIds) {
+      const res = await morningFetch("/payments/form", {
+        method: "POST",
+        body: JSON.stringify({
+          type: attempt.type,
+          description: input.description,
+          amount: input.amount,
+          currency: "ILS",
+          lang: "he",
+          vatType: attempt.vatType,
+          pluginId,
+          group: 100,
+          maxPayments: 1,
+          client: {
+            name: input.clientName,
+            emails: [input.clientEmail],
+            phone: normalizedPhone,
+            add: true,
+          },
+          income: lines,
+          successUrl: `${origin}/order/success?order=${encodeURIComponent(input.orderId)}`,
+          failureUrl: `${origin}/order/failed?order=${encodeURIComponent(input.orderId)}`,
+          notifyUrl: `${origin}/api/webhooks/morning?token=${encodeURIComponent(webhookToken)}`,
+          custom: input.orderId,
+        }),
+      });
 
-  const res = await morningFetch("/payments/form", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    let code = String(res.status);
-    try {
-      const err = (await res.json()) as { errorCode?: unknown; errorMessage?: unknown; error?: unknown };
-      const parts = [err.errorCode, err.errorMessage, err.error].filter((value) => typeof value === "string");
-      if (parts.length) {
-        code = parts.join(" ");
+      if (res.ok) {
+        const data = (await res.json()) as { url?: string };
+        if (data.url && data.url.startsWith("https://")) {
+          return data.url;
+        }
+        lastCode = "invalid_url";
+        continue;
       }
-    } catch {
-      // keep status only
+
+      lastCode = String(res.status);
+      try {
+        const err = (await res.json()) as { errorCode?: unknown; errorMessage?: unknown; error?: unknown };
+        const parts = [err.errorCode, err.errorMessage, err.error].filter((value) => typeof value === "string");
+        if (parts.length) {
+          lastCode = parts.join(" ");
+        }
+      } catch {
+        // keep status only
+      }
+      console.error("morning_payment_form_failed", {
+        status: res.status,
+        code: lastCode,
+        type: attempt.type,
+        vatType: attempt.vatType,
+      });
     }
-    console.error("morning_payment_form_failed", { status: res.status, code });
-    throw new Error(`Failed to create payment form: ${code}`);
   }
 
-  const data = (await res.json()) as { url?: string };
-  if (!data.url || !data.url.startsWith("https://")) {
-    throw new Error("Invalid payment form response");
-  }
-  return data.url;
+  throw new Error(`Failed to create payment form: ${lastCode}`);
 }
 
 export async function getMorningDocument(documentId: string) {
