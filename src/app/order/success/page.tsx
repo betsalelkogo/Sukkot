@@ -11,11 +11,10 @@ export default async function SuccessPage({
   searchParams: Promise<{ order?: string }>;
 }) {
   const { order } = await searchParams;
-  let saved = false;
   const db = getDb();
   if (db && order && /^[0-9a-f-]{36}$/i.test(order)) {
     try {
-      saved = Boolean(await fulfillPaidCheckout(db, order, ""));
+      await fulfillPaidCheckout(db, order, "");
     } catch {
       console.error("checkout_fulfill_failed");
     }
@@ -26,12 +25,15 @@ export default async function SuccessPage({
     <div className="min-h-screen">
       <Header logo={content.logo_text} />
       <main className="mx-auto max-w-xl px-5 py-20 text-center">
-        <h1 className="mb-4 text-4xl font-bold text-[var(--teal)]">ההזמנה התקבלה</h1>
-        <p className="mb-8 text-lg leading-8">
-          {saved
-            ? "תודה! ההזמנה נשמרה אצלנו, והקבלה תישלח אליכם במייל דרך Morning. נעדכן אתכם לגבי האיסוף."
-            : "תודה! התשלום התקבל. ההזמנה נשמרת אצלנו ברגע שהאישור מ-Morning מגיע, והקבלה תישלח אליכם במייל. נעדכן אתכם לגבי האיסוף."}
-        </p>
+        <h1 className="mb-4 text-4xl font-bold text-[var(--teal)]">{content.thankyou_title}</h1>
+        <div className="mb-8 space-y-3 text-lg leading-8">
+          {content.thankyou_body
+            .split("\n")
+            .filter(Boolean)
+            .map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+        </div>
         <Link href="/catalog" className="btn-primary">
           בחזרה לקטלוג
         </Link>

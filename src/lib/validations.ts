@@ -98,6 +98,8 @@ export const contentSchema = z
     about_title: z.string().trim().min(2).max(80),
     about_body: z.string().trim().min(10).max(2000),
     footer_text: z.string().trim().min(2).max(160),
+    thankyou_title: z.string().trim().min(2).max(80),
+    thankyou_body: z.string().trim().min(10).max(2000),
     terms_title: z.string().trim().min(2).max(80),
     terms_body: z.string().trim().min(20).max(40000),
     terms_updated: z.string().trim().min(6).max(20),

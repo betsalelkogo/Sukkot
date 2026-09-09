@@ -47,6 +47,20 @@ export function ContentForm({ defaultValues }: { defaultValues: typeof DEFAULT_C
         />
       </label>
       <Field name="footer_text" label="טקסט תחתון" defaultValue={defaultValues.footer_text} />
+      <Field
+        name="thankyou_title"
+        label="כותרת עמוד התודה לאחר תשלום"
+        defaultValue={defaultValues.thankyou_title}
+      />
+      <label className="block space-y-1">
+        <span>טקסט עמוד התודה לאחר תשלום</span>
+        <textarea
+          name="thankyou_body"
+          defaultValue={defaultValues.thankyou_body}
+          rows={6}
+          className="w-full rounded-md border border-[var(--line)] px-3 py-2"
+        />
+      </label>
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <button type="submit" className="btn-primary" disabled={pending}>
         שמירת תוכן

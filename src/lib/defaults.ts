@@ -5,6 +5,8 @@ export const HOME_CONTENT_KEYS = [
   "about_title",
   "about_body",
   "footer_text",
+  "thankyou_title",
+  "thankyou_body",
 ] as const;
 
 export const DEFAULT_TERMS_BODY = `ברוכים הבאים לאתר של תמר רפאלי – עיצוב גרפי (להלן: "האתר"). האתר משמש להצגת ולמכירת קישוטים ומוצרים לעיצוב הסוכה ולמוצרים נוספים המוצעים באתר.
@@ -146,6 +148,9 @@ export const DEFAULT_CONTENT = {
 
 השנה הסוכה שלכם תהיה יפה יותר!`,
   footer_text: "תמרפאלי · עיצוב גרפי",
+  thankyou_title: "ההזמנה התקבלה",
+  thankyou_body:
+    "תודה! ההזמנה נשמרה אצלנו, והקבלה תישלח אליכם במייל. נעדכן אתכם לגבי מועד הגעת המשלוח.",
   terms_title: "תקנון ותנאי רכישה",
   terms_body: DEFAULT_TERMS_BODY,
   terms_updated: "09.09.2026",
