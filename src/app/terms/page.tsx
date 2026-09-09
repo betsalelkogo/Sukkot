@@ -26,7 +26,6 @@ export default async function TermsPage() {
           <h2 className="text-2xl font-semibold">פרטי העסק</h2>
           <p>שם העסק: {BUSINESS.name}</p>
           <p>בעלת העסק: {BUSINESS.owner}</p>
-          <p>{BUSINESS.idNumber}</p>
           <p>כתובת העסק: {BUSINESS.address}</p>
           <p>
             טלפון:{" "}
