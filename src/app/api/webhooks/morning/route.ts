@@ -48,17 +48,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const sessionId = readField(raw, ["custom", "external_data", "externalData", "externalId"]);
-  const documentId = readField(raw, ["documentId", "document_id", "id"]);
+  const sessionId = readField(raw, [
+    "custom",
+    "external_data",
+    "externalData",
+    "externalId",
+    "more_info",
+    "moreInfo",
+  ]);
+  const documentId = readField(raw, ["documentId", "document_id", "docId", "doc_id"]);
 
   if (!sessionId || !/^[0-9a-f-]{36}$/i.test(sessionId)) {
+    console.error("morning_webhook_missing_session", { keys: Object.keys(raw) });
     return NextResponse.json({ ok: true });
   }
 
   if (documentId) {
     const document = await getMorningDocument(documentId);
     if (!document?.id) {
-      return NextResponse.json({ error: "Unverified" }, { status: 400 });
+      console.error("morning_webhook_document_unverified");
     }
   }
 
