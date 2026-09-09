@@ -1,5 +1,5 @@
 export const DEFAULT_CONTENT = {
-  logo_text: "תפארתי",
+  logo_text: "תמרפאלי · עיצוב גרפי",
   hero_title: "קישוטים מרהיבים לסוכה בעבודת יד",
   catalog_cta: "לקטלוג הקישוטים המלא",
   about_title: "הקישוטים שלנו",
@@ -9,7 +9,7 @@ export const DEFAULT_CONTENT = {
 את כל הדגמים ניתן להזמין גם מודפסים על A3 עם למינציה.
 
 השנה הסוכה שלכם תהיה יפה יותר!`,
-  footer_text: "תפארתי · עיצוב גרפי · קישוטים לסוכה בעבודת יד",
+  footer_text: "תמרפאלי · עיצוב גרפי",
 };
 
 const standard = {

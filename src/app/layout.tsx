@@ -12,7 +12,7 @@ const heebo = Heebo({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "תפארתי | קישוטים לסוכה בעבודת יד",
+  title: "תמרפאלי · עיצוב גרפי",
   description: "קישוטים לסוכה מאויירים בעבודת יד ומודפסים על בד מיוחד. עמיד בגשם ומחזיק לשנים.",
 };
 
