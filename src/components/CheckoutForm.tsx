@@ -10,17 +10,22 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
   const { items, clear } = useCart();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
-  const [pickupPointId, setPickupPointId] = useState(pickupPoints[0]?.id ?? "");
+  const [pickupPointId, setPickupPointId] = useState("");
   const [pickupQuery, setPickupQuery] = useState("");
+  const [pickupOpen, setPickupOpen] = useState(false);
+  const [pickupHighlight, setPickupHighlight] = useState(0);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const visiblePickupPoints = pickupPoints.filter((point) => {
-    const query = pickupQuery.trim();
-    if (!query) {
-      return true;
-    }
-    const haystack = `${point.name} ${point.details} ${point.hours ?? ""}`;
-    return haystack.includes(query);
-  });
+  const query = pickupQuery.trim();
+  const visiblePickupPoints = query
+    ? pickupPoints.filter((point) => `${point.name} ${point.details} ${point.hours ?? ""}`.includes(query))
+    : [];
+  const selectedPickup = pickupPoints.find((point) => point.id === pickupPointId);
+
+  function choosePickup(point: PickupPointRecord) {
+    setPickupPointId(point.id);
+    setPickupQuery(point.name);
+    setPickupOpen(false);
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -87,38 +92,95 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
             עדיין לא הוגדרו נקודות איסוף. אפשר להוסיף אותן באזור הניהול.
           </p>
         ) : (
-          <>
+          <div className="relative">
             <input
               type="search"
               value={pickupQuery}
-              onChange={(event) => setPickupQuery(event.target.value)}
-              placeholder="חיפוש לפי שם יישוב או נקודה"
+              autoComplete="off"
+              placeholder="הקלידו שם יישוב או נקודה"
               className="w-full rounded-md border border-[var(--line)] px-3 py-2"
+              onChange={(event) => {
+                setPickupQuery(event.target.value);
+                setPickupPointId("");
+                setPickupHighlight(0);
+                setPickupOpen(true);
+              }}
+              onFocus={() => {
+                if (query) {
+                  setPickupOpen(true);
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown" && visiblePickupPoints.length) {
+                  event.preventDefault();
+                  setPickupOpen(true);
+                  setPickupHighlight((index) => Math.min(index + 1, visiblePickupPoints.length - 1));
+                }
+                if (event.key === "ArrowUp" && visiblePickupPoints.length) {
+                  event.preventDefault();
+                  setPickupHighlight((index) => Math.max(index - 1, 0));
+                }
+                if (event.key === "Enter" && pickupOpen && visiblePickupPoints[pickupHighlight]) {
+                  event.preventDefault();
+                  choosePickup(visiblePickupPoints[pickupHighlight]);
+                }
+                if (event.key === "Escape") {
+                  setPickupOpen(false);
+                }
+              }}
             />
-            {visiblePickupPoints.length === 0 ? (
-              <p className="rounded-md bg-[var(--paper)] p-3 text-sm text-[var(--muted)]">
+            {pickupOpen && query && visiblePickupPoints.length > 0 ? (
+              <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border border-[var(--line)] bg-white shadow-md">
+                {visiblePickupPoints.slice(0, 12).map((point, index) => (
+                  <li key={point.id}>
+                    <button
+                      type="button"
+                      className={`w-full px-3 py-2 text-right ${
+                        index === pickupHighlight ? "bg-[var(--paper)]" : ""
+                      }`}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => choosePickup(point)}
+                    >
+                      <strong className="block">{point.name}</strong>
+                      {point.details ? (
+                        <span className="block text-sm text-[var(--muted)]">{point.details}</span>
+                      ) : null}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {pickupOpen && query && visiblePickupPoints.length === 0 ? (
+              <p className="mt-2 rounded-md bg-[var(--paper)] p-3 text-sm text-[var(--muted)]">
                 לא נמצאה נקודה מתאימה. נסו שם אחר.
               </p>
             ) : null}
-            {visiblePickupPoints.map((point) => (
-            <label
-              key={point.id}
-              className="flex cursor-pointer items-start gap-3 rounded-md border border-[var(--line)] p-3"
+            <select
+              value={pickupPointId}
+              onChange={(event) => {
+                const point = pickupPoints.find((item) => item.id === event.target.value);
+                if (point) {
+                  choosePickup(point);
+                } else {
+                  setPickupPointId("");
+                }
+              }}
+              className="mt-2 w-full rounded-md border border-[var(--line)] bg-white px-3 py-2"
             >
-              <input
-                type="radio"
-                name="pickupPointId"
-                checked={pickupPointId === point.id}
-                onChange={() => setPickupPointId(point.id)}
-              />
-              <span>
-                <strong>{point.name}</strong>
-                {point.details ? <span className="mt-1 block text-sm text-[var(--muted)]">{point.details}</span> : null}
-                {point.hours ? <span className="mt-1 block text-sm text-[var(--muted)]">{point.hours}</span> : null}
-              </span>
-            </label>
-            ))}
-          </>
+              <option value="">כל נקודות האיסוף</option>
+              {pickupPoints.map((point) => (
+                <option key={point.id} value={point.id}>
+                  {point.name}
+                </option>
+              ))}
+            </select>
+            {selectedPickup ? (
+              <p className="mt-2 rounded-md bg-[var(--paper)] p-3 text-sm text-[var(--muted)]">
+                {selectedPickup.details ? <span className="block">{selectedPickup.details}</span> : null}
+                {selectedPickup.hours ? <span className="block">{selectedPickup.hours}</span> : null}
+              </p>
+            ) : null}
+          </div>
         )}
       </fieldset>
       <label className="block space-y-1">
