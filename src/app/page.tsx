@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { BUSINESS } from "@/lib/business";
 import { getContent } from "@/lib/queries";
 
 export default async function HomePage() {
@@ -39,18 +38,12 @@ export default async function HomePage() {
           <img
             src="/images/atmosphere-1.jpg"
             alt="קישוטים תלויים בסוכה עם איורי פרחים ורימונים"
-            className="h-64 w-full rounded-lg object-cover object-top sm:h-80"
+            className="w-full rounded-lg"
           />
         </section>
 
         <section className="mx-auto mt-14 max-w-3xl px-5 text-center">
           <h2 className="mb-6 text-3xl font-bold">{content.about_title}</h2>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/atmosphere-2.jpg"
-            alt="קישוט ופרוש עלינו סוכת שלומך מקרוב, עם עץ ומתלה"
-            className="mb-8 w-full rounded-lg object-contain object-top"
-          />
           <div className="space-y-3 text-lg leading-8 text-[#333]">
             {paragraphs.map((line) => (
               <p key={line} className={line.includes("השנה") ? "text-xl font-semibold" : undefined}>
@@ -61,21 +54,12 @@ export default async function HomePage() {
           <p className="mt-8 text-sm text-[var(--muted)]">
             2 בדים גדולים ב-200 ₪ · 2 בדים קטנים ב-150 ₪ · 2 מנויילנים ב-50 ₪
           </p>
-          <div className="mt-10 space-y-2 text-base text-[#333]">
-            <p>שם העסק: {BUSINESS.name}</p>
-            <p>כתובת בית עסק: {BUSINESS.address}</p>
-            <p>
-              טלפון ליצירת קשר:{" "}
-              <a className="text-[var(--teal)]" href={BUSINESS.phoneHref}>
-                {BUSINESS.phoneDisplay}
-              </a>
-            </p>
-            <p>
-              <Link href="/terms" className="text-[var(--teal)] underline">
-                תקנון האתר
-              </Link>
-            </p>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/atmosphere-2.jpg"
+            alt="קישוט ופרוש עלינו סוכת שלומך מקרוב, עם עץ ומתלה"
+            className="mt-8 w-full rounded-lg object-contain object-top"
+          />
           <Link href="/catalog" className="btn-primary mt-6">
             {content.catalog_cta}
           </Link>
