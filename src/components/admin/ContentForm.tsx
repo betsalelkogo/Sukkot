@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { DEFAULT_CONTENT } from "@/lib/defaults";
+import { DEFAULT_CONTENT, HOME_CONTENT_KEYS } from "@/lib/defaults";
 
 export function ContentForm({ defaultValues }: { defaultValues: typeof DEFAULT_CONTENT }) {
   const router = useRouter();
@@ -15,7 +15,7 @@ export function ContentForm({ defaultValues }: { defaultValues: typeof DEFAULT_C
     setError("");
     const form = new FormData(event.currentTarget);
     const payload = Object.fromEntries(
-      Object.keys(DEFAULT_CONTENT).map((key) => [key, String(form.get(key) ?? "")]),
+      HOME_CONTENT_KEYS.map((key) => [key, String(form.get(key) ?? "")]),
     );
     const res = await fetch("/api/admin/content", {
       method: "PUT",

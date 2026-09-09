@@ -17,7 +17,14 @@ export async function PUT(request: Request) {
 
   try {
     const db = requireDb();
-    const entries = Object.entries(parsed.data);
+    const data = { ...parsed.data };
+    if (data.terms_title || data.terms_body) {
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, "0");
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      data.terms_updated = `${dd}.${mm}.${now.getFullYear()}`;
+    }
+    const entries = Object.entries(data).filter((entry): entry is [string, string] => typeof entry[1] === "string");
     for (const [key, value] of entries) {
       await db
         .insert(siteContent)

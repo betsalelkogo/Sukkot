@@ -20,6 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/admin/orders">הזמנות</Link>
             <Link href="/admin/pickup-points">נקודות איסוף</Link>
             <Link href="/admin/content">תוכן</Link>
+            <Link href="/admin/terms">תקנון</Link>
             <Link href="/">לאתר</Link>
             <form action="/api/admin/logout" method="post">
               <button type="submit" className="text-red-700">

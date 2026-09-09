@@ -90,14 +90,20 @@ export const productSchema = z.object({
   }
 });
 
-export const contentSchema = z.object({
-  logo_text: z.string().trim().min(1).max(40),
-  hero_title: z.string().trim().min(4).max(120),
-  catalog_cta: z.string().trim().min(2).max(80),
-  about_title: z.string().trim().min(2).max(80),
-  about_body: z.string().trim().min(10).max(2000),
-  footer_text: z.string().trim().min(2).max(160),
-});
+export const contentSchema = z
+  .object({
+    logo_text: z.string().trim().min(1).max(40),
+    hero_title: z.string().trim().min(4).max(120),
+    catalog_cta: z.string().trim().min(2).max(80),
+    about_title: z.string().trim().min(2).max(80),
+    about_body: z.string().trim().min(10).max(2000),
+    footer_text: z.string().trim().min(2).max(160),
+    terms_title: z.string().trim().min(2).max(80),
+    terms_body: z.string().trim().min(20).max(40000),
+    terms_updated: z.string().trim().min(6).max(20),
+  })
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, { message: "Empty" });
 
 export const loginSchema = z.object({
   email: z.string().trim().email().max(120),
