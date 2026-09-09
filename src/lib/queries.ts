@@ -1,4 +1,4 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
 import { DEFAULT_CONTENT, SAMPLE_PRODUCTS } from "./defaults";
 import { getDb } from "./db";
 import { parseGallery } from "./images";
@@ -182,6 +182,30 @@ export async function getOrders() {
     return [];
   }
   return db.select().from(orders).where(eq(orders.status, "paid")).orderBy(desc(orders.createdAt));
+}
+
+export async function getPaidOrdersWithItems() {
+  const list = await getOrders();
+  const db = getDb();
+  if (!db || list.length === 0) {
+    return list.map((order) => ({ ...order, items: [] as (typeof orderItems.$inferSelect)[] }));
+  }
+  const items = await db
+    .select()
+    .from(orderItems)
+    .where(
+      inArray(
+        orderItems.orderId,
+        list.map((order) => order.id),
+      ),
+    );
+  const byOrder = new Map<string, typeof items>();
+  for (const item of items) {
+    const current = byOrder.get(item.orderId) ?? [];
+    current.push(item);
+    byOrder.set(item.orderId, current);
+  }
+  return list.map((order) => ({ ...order, items: byOrder.get(order.id) ?? [] }));
 }
 
 export async function getOrderWithItems(id: string) {

@@ -56,6 +56,12 @@ export default async function AdminOrdersPage({
         <button type="submit" className="btn-primary">
           סינון
         </button>
+        <a
+          href={pickup ? `/api/admin/orders/export?pickup=${encodeURIComponent(pickup)}` : "/api/admin/orders/export"}
+          className="rounded-md border border-[var(--line)] px-4 py-3"
+        >
+          ייצוא לאקסל
+        </a>
       </form>
       <p className="text-sm text-[var(--muted)]">
         {filtered.length} מתוך {orderList.length} הזמנות
