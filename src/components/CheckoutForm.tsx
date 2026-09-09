@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { BUSINESS } from "@/lib/business";
 import { useCart } from "./CartProvider";
 import type { PickupPointRecord } from "@/lib/queries";
 
@@ -9,6 +11,7 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [pickupPointId, setPickupPointId] = useState(pickupPoints[0]?.id ?? "");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -17,14 +20,21 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
       setError("יש לבחור נקודת איסוף.");
       return;
     }
+    if (!acceptedTerms) {
+      setError("יש לאשר את התקנון כדי להמשיך לתשלום.");
+      return;
+    }
     setPending(true);
     const form = new FormData(event.currentTarget);
     const payload = {
-      customerName: String(form.get("customerName") ?? ""),
+      firstName: String(form.get("firstName") ?? ""),
+      lastName: String(form.get("lastName") ?? ""),
       customerEmail: String(form.get("customerEmail") ?? ""),
       customerPhone: String(form.get("customerPhone") ?? ""),
+      country: String(form.get("country") ?? ""),
       pickupPointId,
       notes: String(form.get("notes") ?? ""),
+      acceptedTerms: true,
       items: items.map((item) => ({
         productId: item.productId,
         variant: item.variant,
@@ -54,9 +64,13 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <Field name="customerName" label="שם מלא" required />
-      <Field name="customerEmail" label="אימייל" type="email" required />
-      <Field name="customerPhone" label="טלפון" required placeholder="0501234567" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field name="firstName" label="שם פרטי" required />
+        <Field name="lastName" label="שם משפחה" required />
+      </div>
+      <Field name="customerEmail" label="כתובת מייל" type="email" required />
+      <Field name="customerPhone" label="טלפון ללא קידומת" required placeholder="542307195" />
+      <Field name="country" label="מדינה" required defaultValue={BUSINESS.country} />
       <fieldset className="space-y-2">
         <legend className="mb-2 text-sm font-medium">נקודת איסוף</legend>
         {pickupPoints.length === 0 ? (
@@ -94,6 +108,21 @@ export function CheckoutForm({ pickupPoints }: { pickupPoints: PickupPointRecord
           className="w-full rounded-md border border-[var(--line)] px-3 py-2"
         />
       </label>
+      <label className="flex items-start gap-3 rounded-md border border-[var(--line)] p-3">
+        <input
+          type="checkbox"
+          name="acceptedTerms"
+          required
+          checked={acceptedTerms}
+          onChange={(event) => setAcceptedTerms(event.target.checked)}
+        />
+        <span className="text-sm">
+          קראתי ואני מאשר/ת את{" "}
+          <Link href="/terms" target="_blank" className="font-semibold text-[var(--teal)] underline">
+            התקנון
+          </Link>
+        </span>
+      </label>
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <button type="submit" className="btn-primary w-full" disabled={pending || items.length === 0}>
         {pending ? "מעבירים לתשלום..." : "המשך לתשלום מאובטח"}
@@ -111,12 +140,14 @@ function Field({
   type = "text",
   required,
   placeholder,
+  defaultValue,
 }: {
   name: string;
   label: string;
   type?: string;
   required?: boolean;
   placeholder?: string;
+  defaultValue?: string;
 }) {
   return (
     <label className="block space-y-1">
@@ -126,6 +157,7 @@ function Field({
         type={type}
         required={required}
         placeholder={placeholder}
+        defaultValue={defaultValue}
         className="w-full rounded-md border border-[var(--line)] px-3 py-2"
       />
     </label>

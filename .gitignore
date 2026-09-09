@@ -8,6 +8,7 @@ node_modules/
 secrets.json
 *.pem
 *.key
+src/scripts/morning-plugin-id.ts
 
 # next
 .next/

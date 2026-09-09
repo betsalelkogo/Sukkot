@@ -1,14 +1,17 @@
 import { z } from "zod";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const phonePattern = /^0(?:5\d|[2-4789])-?\d{7}$/;
+const phonePattern = /^(0?5\d-?\d{7}|0?[2-4789]-?\d{7})$/;
 
 export const checkoutSchema = z.object({
-  customerName: z.string().trim().min(2).max(80),
+  firstName: z.string().trim().min(2).max(40),
+  lastName: z.string().trim().min(2).max(40),
   customerEmail: z.string().trim().email().max(120),
   customerPhone: z.string().trim().regex(phonePattern, "מספר טלפון לא תקין"),
+  country: z.string().trim().min(2).max(60),
   pickupPointId: z.string().uuid(),
   notes: z.string().trim().max(400).optional().or(z.literal("")),
+  acceptedTerms: z.literal(true),
   items: z
     .array(
       z.object({
@@ -108,6 +111,11 @@ export const pickupPointSchema = z.object({
   sortOrder: z.number().int().min(0).max(9999),
   active: z.boolean(),
 });
+
+export function normalizeLocalPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  return digits.startsWith("0") ? digits : `0${digits}`;
+}
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type ProductInput = z.infer<typeof productSchema>;

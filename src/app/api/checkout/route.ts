@@ -7,7 +7,7 @@ import { dealDiscountAgorot, priceForVariant, stockForVariant, variantLabel, typ
 import { rateLimit } from "@/lib/rate-limit";
 import { orderItems, orders, pickupPoints, products } from "@/lib/schema";
 import { releaseStock, reserveStock } from "@/lib/stock";
-import { checkoutSchema } from "@/lib/validations";
+import { checkoutSchema, normalizeLocalPhone } from "@/lib/validations";
 
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
@@ -92,10 +92,10 @@ export async function POST(request: Request) {
       const [order] = await db
         .insert(orders)
         .values({
-          customerName: input.customerName,
+          customerName: `${input.firstName} ${input.lastName}`,
           customerEmail: input.customerEmail,
-          customerPhone: input.customerPhone,
-          address: pickup.details || pickup.name,
+          customerPhone: normalizeLocalPhone(input.customerPhone),
+          address: [pickup.details || pickup.name, `מדינה: ${input.country}`].join(" · "),
           city: pickup.name,
           pickupPointId: pickup.id,
           pickupPointName: pickup.name,
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
         orderId: order.id,
         description: `הזמנה ${order.id.slice(0, 8)}`,
         amount: agorotToShekels(totalAgorot),
-        clientName: input.customerName,
+        clientName: `${input.firstName} ${input.lastName}`,
         clientEmail: input.customerEmail,
         clientPhone: input.customerPhone,
         income,

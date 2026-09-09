@@ -13,6 +13,9 @@ export function Header({ logo }: { logo: string }) {
           <Link href="/catalog" className="hover:text-[var(--teal)]">
             קטלוג
           </Link>
+          <Link href="/terms" className="hover:text-[var(--teal)]">
+            תקנון
+          </Link>
           <CartLink />
         </nav>
       </div>

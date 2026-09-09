@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { BUSINESS } from "@/lib/business";
 import { getContent } from "@/lib/queries";
 
 export default async function HomePage() {
@@ -60,6 +61,21 @@ export default async function HomePage() {
           <p className="mt-8 text-sm text-[var(--muted)]">
             2 בדים גדולים ב-200 ₪ · 2 בדים קטנים ב-150 ₪ · 2 מנויילנים ב-50 ₪
           </p>
+          <div className="mt-10 space-y-2 text-base text-[#333]">
+            <p>שם העסק: {BUSINESS.name}</p>
+            <p>כתובת בית עסק: {BUSINESS.address}</p>
+            <p>
+              טלפון ליצירת קשר:{" "}
+              <a className="text-[var(--teal)]" href={BUSINESS.phoneHref}>
+                {BUSINESS.phoneDisplay}
+              </a>
+            </p>
+            <p>
+              <Link href="/terms" className="text-[var(--teal)] underline">
+                תקנון האתר
+              </Link>
+            </p>
+          </div>
           <Link href="/catalog" className="btn-primary mt-6">
             {content.catalog_cta}
           </Link>
