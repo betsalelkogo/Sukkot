@@ -183,7 +183,7 @@ export async function getOrders() {
   if (!db) {
     return [];
   }
-  return db.select().from(orders).orderBy(desc(orders.createdAt));
+  return db.select().from(orders).where(eq(orders.status, "paid")).orderBy(desc(orders.createdAt));
 }
 
 export async function getOrderWithItems(id: string) {

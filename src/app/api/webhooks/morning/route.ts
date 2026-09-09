@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
+import { fulfillPaidCheckout } from "@/lib/checkout-session";
 import { requireDb } from "@/lib/db";
 import { getMorningDocument } from "@/lib/morning";
 import { orders } from "@/lib/schema";
@@ -47,16 +48,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const orderId = readField(raw, ["custom", "external_data", "externalData", "externalId"]);
+  const sessionId = readField(raw, ["custom", "external_data", "externalData", "externalId"]);
   const documentId = readField(raw, ["documentId", "document_id", "id"]);
 
-  if (!orderId || !/^[0-9a-f-]{36}$/i.test(orderId)) {
-    return NextResponse.json({ ok: true });
-  }
-
-  const db = requireDb();
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-  if (!order) {
+  if (!sessionId || !/^[0-9a-f-]{36}$/i.test(sessionId)) {
     return NextResponse.json({ ok: true });
   }
 
@@ -67,15 +62,25 @@ export async function POST(request: Request) {
     }
   }
 
-  if (order.status !== "paid") {
-    await db
-      .update(orders)
-      .set({
-        status: "paid",
-        morningDocumentId: documentId || order.morningDocumentId,
-        updatedAt: new Date(),
-      })
-      .where(eq(orders.id, orderId));
+  const db = requireDb();
+  try {
+    const created = await fulfillPaidCheckout(db, sessionId, documentId);
+    if (!created) {
+      const [order] = await db.select().from(orders).where(eq(orders.id, sessionId)).limit(1);
+      if (order && order.status !== "paid") {
+        await db
+          .update(orders)
+          .set({
+            status: "paid",
+            morningDocumentId: documentId || order.morningDocumentId,
+            updatedAt: new Date(),
+          })
+          .where(eq(orders.id, sessionId));
+      }
+    }
+  } catch {
+    console.error("checkout_fulfill_failed");
+    return NextResponse.json({ error: "Unable to save order" }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

@@ -34,23 +34,23 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto mt-8 grid max-w-6xl gap-4 px-5 sm:grid-cols-2">
+        <section className="mx-auto mt-8 max-w-6xl px-5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/atmosphere-1.jpg"
             alt="קישוטים תלויים בסוכה עם איורי פרחים ורימונים"
-            className="h-64 w-full rounded-lg object-cover sm:h-80"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/atmosphere-2.jpg"
-            alt="קישוט ופרוש עלינו סוכת שלומך מקרוב, עם עץ ומתלה"
-            className="h-64 w-full rounded-lg object-cover sm:h-80"
+            className="h-64 w-full rounded-lg object-cover object-top sm:h-80"
           />
         </section>
 
         <section className="mx-auto mt-14 max-w-3xl px-5 text-center">
           <h2 className="mb-6 text-3xl font-bold">{content.about_title}</h2>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/atmosphere-2.jpg"
+            alt="קישוט ופרוש עלינו סוכת שלומך מקרוב, עם עץ ומתלה"
+            className="mb-8 w-full rounded-lg object-contain object-top"
+          />
           <div className="space-y-3 text-lg leading-8 text-[#333]">
             {paragraphs.map((line) => (
               <p key={line} className={line.includes("השנה") ? "text-xl font-semibold" : undefined}>

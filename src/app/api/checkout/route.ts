@@ -1,11 +1,12 @@
 import { eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { abandonCheckoutSession, createCheckoutSession } from "@/lib/checkout-session";
 import { requireDb } from "@/lib/db";
 import { createPaymentForm, isMorningConfigured } from "@/lib/morning";
 import { agorotToShekels } from "@/lib/money";
 import { dealDiscountAgorot, priceForVariant, stockForVariant, variantLabel, type ProductVariant } from "@/lib/pricing";
 import { rateLimit } from "@/lib/rate-limit";
-import { orderItems, orders, pickupPoints, products } from "@/lib/schema";
+import { pickupPoints, products } from "@/lib/schema";
 import { releaseStock, reserveStock } from "@/lib/stock";
 import { checkoutSchema, normalizeLocalPhone } from "@/lib/validations";
 
@@ -87,35 +88,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "אין מספיק מלאי לאחד המוצרים." }, { status: 409 });
     }
 
-    let createdOrderId: string | undefined;
+    let sessionId: string | undefined;
     try {
-      const [order] = await db
-        .insert(orders)
-        .values({
-          customerName: `${input.firstName} ${input.lastName}`,
-          customerEmail: input.customerEmail,
-          customerPhone: normalizeLocalPhone(input.customerPhone),
-          address: [pickup.details || pickup.name, `מדינה: ${input.country}`].join(" · "),
-          city: pickup.name,
-          pickupPointId: pickup.id,
-          pickupPointName: pickup.name,
-          notes: input.notes || null,
-          status: "pending",
-          totalAgorot,
-        })
-        .returning();
-      createdOrderId = order.id;
-
-      await db.insert(orderItems).values(
-        pricedItems.map((item) => ({
-          orderId: order.id,
+      const session = await createCheckoutSession(db, {
+        customerName: `${input.firstName} ${input.lastName}`,
+        customerEmail: input.customerEmail,
+        customerPhone: normalizeLocalPhone(input.customerPhone),
+        address: [pickup.details || pickup.name, `מדינה: ${input.country}`].join(" · "),
+        city: pickup.name,
+        pickupPointId: pickup.id,
+        pickupPointName: pickup.name,
+        notes: input.notes || null,
+        totalAgorot,
+        items: pricedItems.map((item) => ({
           productId: item.product.id,
           productName: item.product.name,
           variant: item.variant,
           quantity: item.quantity,
           unitPriceAgorot: item.unitPriceAgorot,
         })),
-      );
+      });
+      sessionId = session.id;
 
       const income = pricedItems.map((item) => ({
         description: `${item.product.name} — ${variantLabel(item.variant, item.product)}`,
@@ -135,29 +128,34 @@ export async function POST(request: Request) {
       }
 
       const paymentUrl = await createPaymentForm({
-        orderId: order.id,
-        description: `הזמנה ${order.id.slice(0, 8)}`,
+        orderId: session.id,
+        description: `הזמנה ${session.id.slice(0, 8)}`,
         amount: agorotToShekels(totalAgorot),
         clientName: `${input.firstName} ${input.lastName}`,
         clientEmail: input.customerEmail,
-        clientPhone: input.customerPhone,
+        clientPhone: normalizeLocalPhone(input.customerPhone),
         income,
       });
 
       return NextResponse.json({ url: paymentUrl });
-    } catch {
-      await releaseStock(db, reservation);
-      if (createdOrderId) {
-        await db
-          .update(orders)
-          .set({ status: "failed", updatedAt: new Date() })
-          .where(eq(orders.id, createdOrderId));
+    } catch (error) {
+      if (sessionId) {
+        await abandonCheckoutSession(db, sessionId);
+      } else {
+        await releaseStock(db, reservation);
       }
-      throw new Error("CHECKOUT");
+      throw error;
     }
   } catch (error) {
     if (error instanceof Error && error.message === "UNAVAILABLE") {
       return NextResponse.json({ error: "אחד המוצרים אינו זמין." }, { status: 400 });
+    }
+    if (error instanceof Error && error.message.startsWith("Failed to create payment form")) {
+      console.error("checkout_failed", error.message);
+      return NextResponse.json(
+        { error: "לא ניתן לפתוח את דף התשלום כרגע. נסו שוב בעוד רגע." },
+        { status: 502 },
+      );
     }
     console.error("checkout_failed");
     return NextResponse.json({ error: "לא ניתן להשלים את ההזמנה כרגע." }, { status: 500 });

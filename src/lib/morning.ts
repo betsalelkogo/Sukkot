@@ -1,18 +1,29 @@
 const TOKEN_CACHE_MS = 45 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 15_000;
 
-type TokenCache = { token: string; expiresAt: number };
+type EnvName = "sandbox" | "production";
+type TokenCache = { token: string; expiresAt: number; env: EnvName };
 
 let tokenCache: TokenCache | null = null;
 
-function morningEnv() {
+function preferredEnv(): EnvName {
   return process.env.MORNING_ENV === "production" ? "production" : "sandbox";
 }
 
+function hosts(env: EnvName) {
+  return env === "production"
+    ? {
+        tokenUrl: "https://api.morning.co/idp/v1/oauth/token",
+        apiBase: "https://api.greeninvoice.co.il/api/v1",
+      }
+    : {
+        tokenUrl: "https://api.sandbox.morning.dev/idp/v1/oauth/token",
+        apiBase: "https://sandbox.d.greeninvoice.co.il/api/v1",
+      };
+}
+
 function apiBase() {
-  return morningEnv() === "production"
-    ? "https://api.greeninvoice.co.il/api/v1"
-    : "https://sandbox.d.greeninvoice.co.il/api/v1";
+  return hosts(tokenCache?.env ?? preferredEnv()).apiBase;
 }
 
 function isConfigured() {
@@ -37,6 +48,45 @@ async function fetchWithTimeout(url: string, init: RequestInit) {
   }
 }
 
+async function login(env: EnvName, clientId: string, clientSecret: string) {
+  try {
+    const { tokenUrl, apiBase: base } = hosts(env);
+    const oauthRes = await fetchWithTimeout(tokenUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret,
+      }).toString(),
+    });
+    if (oauthRes.ok) {
+      const data = (await oauthRes.json()) as { accessToken?: string; access_token?: string };
+      const token = data.accessToken ?? data.access_token;
+      if (token) {
+        return token;
+      }
+    }
+
+    const legacyRes = await fetchWithTimeout(`${base}/account/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: clientId,
+        secret: clientSecret,
+        grant_type: "client_credentials",
+      }),
+    });
+    if (!legacyRes.ok) {
+      return null;
+    }
+    const legacy = (await legacyRes.json()) as { token?: string; accessToken?: string };
+    return legacy.token ?? legacy.accessToken ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function getAccessToken(): Promise<string> {
   if (tokenCache && tokenCache.expiresAt > Date.now()) {
     return tokenCache.token;
@@ -48,53 +98,16 @@ async function getAccessToken(): Promise<string> {
     throw new Error("Morning credentials are missing");
   }
 
-  const oauthUrl =
-    morningEnv() === "production"
-      ? "https://api.morning.co/idp/v1/oauth/token"
-      : "https://api.sandbox.morning.dev/idp/v1/oauth/token";
-
-  const oauthBody = new URLSearchParams({
-    grant_type: "client_credentials",
-    client_id: clientId,
-    client_secret: clientSecret,
-  });
-
-  const oauthRes = await fetchWithTimeout(oauthUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: oauthBody.toString(),
-  });
-
-  if (oauthRes.ok) {
-    const data = (await oauthRes.json()) as { accessToken?: string; access_token?: string };
-    const token = data.accessToken ?? data.access_token;
+  const first = preferredEnv();
+  const order: EnvName[] = first === "production" ? ["production", "sandbox"] : ["sandbox", "production"];
+  for (const env of order) {
+    const token = await login(env, clientId, clientSecret);
     if (token) {
-      tokenCache = { token, expiresAt: Date.now() + TOKEN_CACHE_MS };
+      tokenCache = { token, expiresAt: Date.now() + TOKEN_CACHE_MS, env };
       return token;
     }
   }
-
-  const legacyRes = await fetchWithTimeout(`${apiBase()}/account/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id: clientId,
-      secret: clientSecret,
-      grant_type: "client_credentials",
-    }),
-  });
-
-  if (!legacyRes.ok) {
-    throw new Error("Morning authentication failed");
-  }
-
-  const legacy = (await legacyRes.json()) as { token?: string; accessToken?: string };
-  const token = legacy.token ?? legacy.accessToken;
-  if (!token) {
-    throw new Error("Morning authentication failed");
-  }
-  tokenCache = { token, expiresAt: Date.now() + TOKEN_CACHE_MS };
-  return token;
+  throw new Error("Morning authentication failed");
 }
 
 async function morningFetch(path: string, init: RequestInit) {
@@ -119,6 +132,25 @@ export type PaymentLine = {
   vatType: 1;
 };
 
+function applyDealToIncome(lines: PaymentLine[], amount: number) {
+  const income = lines.map((line) => ({ ...line }));
+  let gap = Math.round(
+    (income.reduce((sum, line) => sum + line.price * line.quantity, 0) - amount) * 100,
+  ) / 100;
+  for (let i = income.length - 1; i >= 0 && gap > 0; i -= 1) {
+    const line = income[i];
+    const lineTotal = line.price * line.quantity;
+    const minTotal = 0.01 * line.quantity;
+    const cut = Math.min(gap, Math.max(0, lineTotal - minTotal));
+    if (cut <= 0) {
+      continue;
+    }
+    line.price = Math.round(((lineTotal - cut) / line.quantity) * 100) / 100;
+    gap = Math.round((gap - cut) * 100) / 100;
+  }
+  return income;
+}
+
 export async function createPaymentForm(input: {
   orderId: string;
   description: string;
@@ -138,6 +170,13 @@ export async function createPaymentForm(input: {
     throw new Error("Payment return URLs are not configured");
   }
 
+  const income = applyDealToIncome(
+    input.income.filter((line) => line.price > 0),
+    input.amount,
+  );
+  const phone = input.clientPhone.replace(/\D/g, "");
+  const normalizedPhone = phone.startsWith("0") ? phone : `0${phone}`;
+
   const body = {
     type: 320,
     description: input.description,
@@ -151,13 +190,13 @@ export async function createPaymentForm(input: {
     client: {
       name: input.clientName,
       emails: [input.clientEmail],
-      phone: input.clientPhone,
+      phone: normalizedPhone,
       add: true,
     },
-    income: input.income,
-    successUrl: `${siteUrl}/order/success?order=${encodeURIComponent(input.orderId)}`,
-    failureUrl: `${siteUrl}/order/failed?order=${encodeURIComponent(input.orderId)}`,
-    notifyUrl: `${siteUrl}/api/webhooks/morning?token=${encodeURIComponent(webhookToken)}`,
+    income,
+    successUrl: `${siteUrl.replace(/\/$/, "")}/order/success?order=${encodeURIComponent(input.orderId)}`,
+    failureUrl: `${siteUrl.replace(/\/$/, "")}/order/failed?order=${encodeURIComponent(input.orderId)}`,
+    notifyUrl: `${siteUrl.replace(/\/$/, "")}/api/webhooks/morning?token=${encodeURIComponent(webhookToken)}`,
     custom: input.orderId,
   };
 
@@ -167,7 +206,18 @@ export async function createPaymentForm(input: {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to create payment form");
+    let code = String(res.status);
+    try {
+      const err = (await res.json()) as { errorCode?: unknown; errorMessage?: unknown; error?: unknown };
+      const parts = [err.errorCode, err.errorMessage, err.error].filter((value) => typeof value === "string");
+      if (parts.length) {
+        code = parts.join(" ");
+      }
+    } catch {
+      // keep status only
+    }
+    console.error("morning_payment_form_failed", { status: res.status, code });
+    throw new Error(`Failed to create payment form: ${code}`);
   }
 
   const data = (await res.json()) as { url?: string };

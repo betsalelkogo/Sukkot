@@ -1,6 +1,7 @@
 import { and, eq, lt } from "drizzle-orm";
 import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
+import { expireOpenCheckoutSessions } from "@/lib/checkout-session";
 import { getDb } from "@/lib/db";
 import { orders } from "@/lib/schema";
 import { releaseOrdersStock } from "@/lib/stock";
@@ -41,5 +42,12 @@ export async function GET(request: Request) {
     expired.map((order) => order.id),
   );
 
-  return NextResponse.json({ expired: expired.length });
+  let sessions = 0;
+  try {
+    sessions = await expireOpenCheckoutSessions(db);
+  } catch {
+    sessions = 0;
+  }
+
+  return NextResponse.json({ expired: expired.length, sessions });
 }

@@ -57,6 +57,25 @@ export const pickupPoints = pgTable("pickup_points", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const checkoutSessions = pgTable("checkout_sessions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone").notNull(),
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  pickupPointId: uuid("pickup_point_id"),
+  pickupPointName: text("pickup_point_name"),
+  notes: text("notes"),
+  totalAgorot: integer("total_agorot").notNull(),
+  itemsJson: text("items_json").notNull(),
+  status: text("status").notNull().default("open"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  orderId: uuid("order_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
   customerName: text("customer_name").notNull(),
