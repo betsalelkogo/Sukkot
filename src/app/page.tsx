@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { HeroVideo } from "@/components/HeroVideo";
 import { getContent } from "@/lib/queries";
 
 export default async function HomePage() {
@@ -11,22 +12,15 @@ export default async function HomePage() {
     <div className="min-h-screen">
       <Header logo={content.logo_text} />
       <main>
-        <section className="px-5 pt-10 text-center">
-          <h1 className="mx-auto max-w-3xl text-3xl font-bold text-[var(--teal)] sm:text-5xl">
-            {content.hero_title}
-          </h1>
-        </section>
-
-        <section className="relative mx-auto mt-8 max-w-6xl overflow-hidden px-5">
-          <div className="relative overflow-hidden rounded-lg bg-[var(--paper)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/hero.jpg"
-              alt="קישוטי סוכה מאויירים בעבודת יד, תלויים עם עץ ומתלה"
-              className="h-[360px] w-full object-cover object-center sm:h-[520px]"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/15">
-              <Link href="/catalog" className="btn-primary text-lg shadow-lg">
+        <section className="relative overflow-hidden">
+          <div className="relative min-h-[calc(100svh-5.75rem)] sm:min-h-[calc(100svh-7rem)]">
+            <HeroVideo src="/images/hero.mp4" poster="/images/hero.jpg" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/55" />
+            <div className="relative z-10 flex min-h-[calc(100svh-5.75rem)] flex-col items-center justify-end px-5 pb-12 text-center sm:min-h-[calc(100svh-7rem)] sm:pb-16">
+              <h1 className="mx-auto max-w-3xl text-3xl font-bold text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:text-5xl">
+                {content.hero_title}
+              </h1>
+              <Link href="/catalog" className="btn-primary mt-6 text-lg shadow-lg">
                 {content.catalog_cta}
               </Link>
             </div>
