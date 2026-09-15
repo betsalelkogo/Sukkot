@@ -15,9 +15,8 @@ export default async function HomePage() {
         <section className="relative overflow-hidden">
           <div className="relative min-h-[calc(100svh-5.75rem)] sm:min-h-[calc(100svh-7rem)]">
             <HeroVideo src="/images/hero.mp4" poster="/images/hero.jpg" />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/55" />
             <div className="relative z-10 flex min-h-[calc(100svh-5.75rem)] flex-col items-center justify-end px-5 pb-12 text-center sm:min-h-[calc(100svh-7rem)] sm:pb-16">
-              <h1 className="mx-auto max-w-3xl text-3xl font-bold text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:text-5xl">
+              <h1 className="mx-auto max-w-3xl text-3xl font-bold text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.7)] sm:text-5xl">
                 {content.hero_title}
               </h1>
               <Link href="/catalog" className="btn-primary mt-6 text-lg shadow-lg">

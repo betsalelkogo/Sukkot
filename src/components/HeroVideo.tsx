@@ -31,16 +31,16 @@ export function HeroVideo({ src, poster }: Props) {
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-[#1c1914]" aria-hidden="true">
+    <div className="absolute inset-0 overflow-hidden bg-[var(--paper)]" aria-hidden="true">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={poster}
         alt=""
-        className="absolute inset-0 hidden h-full w-full object-cover motion-reduce:block"
+        className="absolute inset-0 hidden h-full w-full object-cover brightness-[1.18] contrast-[1.04] saturate-[1.06] motion-reduce:block"
       />
       <video
         ref={videoRef}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center motion-reduce:hidden md:object-contain"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center brightness-[1.18] contrast-[1.04] saturate-[1.06] motion-reduce:hidden md:object-contain"
         autoPlay
         muted
         loop
