@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatIsraelDateTime } from "@/lib/datetime";
 import { formatIls } from "@/lib/money";
 import { getOrders, getPickupPoints } from "@/lib/queries";
 
@@ -88,7 +89,7 @@ export default async function AdminOrdersPage({
             ) : (
               filtered.map((order) => (
                 <tr key={order.id} className="border-t border-[var(--line)]">
-                  <td className="p-3">{order.createdAt.toLocaleString("he-IL")}</td>
+                  <td className="p-3">{formatIsraelDateTime(order.createdAt)}</td>
                   <td className="p-3">{order.customerName}</td>
                   <td className="p-3">{order.pickupPointName || "-"}</td>
                   <td className="p-3">{formatIls(order.totalAgorot)}</td>

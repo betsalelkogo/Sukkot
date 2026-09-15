@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { formatIsraelDateTime } from "@/lib/datetime";
 import { formatIls } from "@/lib/money";
 import { VARIANT_LABEL, variantLabel, type ProductVariant } from "@/lib/pricing";
 import { getPaidOrdersWithItems, getProducts } from "@/lib/queries";
@@ -57,7 +58,7 @@ export async function GET(request: Request) {
       })
       .join(" | ");
     return [
-      order.createdAt.toLocaleString("he-IL"),
+      formatIsraelDateTime(order.createdAt),
       order.customerName,
       excelPhone(order.customerPhone),
       order.customerEmail,

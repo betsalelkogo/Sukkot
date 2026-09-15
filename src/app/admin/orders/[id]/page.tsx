@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { formatIsraelDateTime } from "@/lib/datetime";
 import { formatIls } from "@/lib/money";
 import { variantLabel, VARIANT_LABEL, type ProductVariant } from "@/lib/pricing";
 import { getOrderWithItems, getProducts } from "@/lib/queries";
@@ -14,6 +15,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
   return (
     <div className="max-w-2xl space-y-5 rounded-lg border border-[var(--line)] bg-white p-6">
       <h1 className="text-3xl font-bold">הזמנה</h1>
+      <p>תאריך: {formatIsraelDateTime(order.createdAt)}</p>
       <p>שם: {order.customerName}</p>
       <p>אימייל: {order.customerEmail}</p>
       <p>טלפון: {order.customerPhone}</p>
