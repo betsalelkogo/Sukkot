@@ -87,6 +87,8 @@ export const orders = pgTable("orders", {
   pickupPointName: text("pickup_point_name"),
   notes: text("notes"),
   status: text("status").notNull().default("pending"),
+  packed: boolean("packed").notNull().default(false),
+  shipped: boolean("shipped").notNull().default(false),
   totalAgorot: integer("total_agorot").notNull(),
   morningDocumentId: text("morning_document_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

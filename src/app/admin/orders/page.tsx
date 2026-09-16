@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrderFulfillmentChecks } from "@/components/admin/OrderFulfillmentChecks";
 import { formatIsraelDateTime } from "@/lib/datetime";
 import { formatIls } from "@/lib/money";
 import { getOrders, getPickupPoints } from "@/lib/queries";
@@ -76,13 +77,14 @@ export default async function AdminOrdersPage({
               <th className="p-3">איסוף</th>
               <th className="p-3">סכום</th>
               <th className="p-3">סטטוס</th>
+              <th className="p-3">נארז / נשלח</th>
               <th className="p-3"></th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td className="p-6 text-[var(--muted)]" colSpan={6}>
+                <td className="p-6 text-[var(--muted)]" colSpan={7}>
                   אין הזמנות בסינון הזה.
                 </td>
               </tr>
@@ -94,6 +96,13 @@ export default async function AdminOrdersPage({
                   <td className="p-3">{order.pickupPointName || "-"}</td>
                   <td className="p-3">{formatIls(order.totalAgorot)}</td>
                   <td className="p-3">{statusLabel[order.status] ?? order.status}</td>
+                  <td className="p-3">
+                    <OrderFulfillmentChecks
+                      orderId={order.id}
+                      packed={order.packed}
+                      shipped={order.shipped}
+                    />
+                  </td>
                   <td className="p-3">
                     <Link href={`/admin/orders/${order.id}`} className="text-[var(--teal)]">
                       פירוט

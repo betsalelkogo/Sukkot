@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { OrderFulfillmentChecks } from "@/components/admin/OrderFulfillmentChecks";
 import { formatIsraelDateTime } from "@/lib/datetime";
 import { formatIls } from "@/lib/money";
 import { variantLabel, VARIANT_LABEL, type ProductVariant } from "@/lib/pricing";
@@ -26,6 +27,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
       </p>
       <p>הערות: {order.notes || "אין"}</p>
       <p>סטטוס: {order.status}</p>
+      <OrderFulfillmentChecks orderId={order.id} packed={order.packed} shipped={order.shipped} />
       <p>סה״כ: {formatIls(order.totalAgorot)}</p>
       <ul className="space-y-2">
         {order.items.map((item) => (

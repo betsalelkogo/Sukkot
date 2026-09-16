@@ -112,6 +112,11 @@ export const loginSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
+export const orderFulfillmentSchema = z.object({
+  packed: z.boolean(),
+  shipped: z.boolean(),
+});
+
 export const pickupPointSchema = z.object({
   name: z.string().trim().min(2).max(80),
   details: z.string().trim().max(240).optional().or(z.literal("")),

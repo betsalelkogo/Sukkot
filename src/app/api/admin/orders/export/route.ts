@@ -45,6 +45,8 @@ export async function GET(request: Request) {
     "פריטים",
     "סה\"כ",
     "סטטוס",
+    "נארז",
+    "נשלח",
     "הערות",
   ];
 
@@ -67,6 +69,8 @@ export async function GET(request: Request) {
       items,
       formatIls(order.totalAgorot),
       STATUS_LABEL[order.status] ?? order.status,
+      order.packed ? "כן" : "לא",
+      order.shipped ? "כן" : "לא",
       order.notes || "",
     ].map(csvCell);
   });
