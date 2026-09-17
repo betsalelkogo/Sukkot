@@ -68,9 +68,9 @@ export default async function AdminOrdersPage({
       <p className="text-sm text-[var(--muted)]">
         {filtered.length} מתוך {orderList.length} הזמנות
       </p>
-      <div className="overflow-x-auto rounded-lg border border-[var(--line)] bg-white">
+      <div className="max-h-[calc(100vh-16rem)] overflow-auto rounded-lg border border-[var(--line)] bg-white">
         <table className="w-full text-right text-sm">
-          <thead className="bg-[var(--paper)]">
+          <thead className="sticky top-0 z-10 bg-[var(--paper)]">
             <tr>
               <th className="p-3">תאריך</th>
               <th className="p-3">לקוח</th>
