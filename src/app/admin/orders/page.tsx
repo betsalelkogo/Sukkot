@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { OrderFulfillmentChecks } from "@/components/admin/OrderFulfillmentChecks";
+import { ScrollToOrder } from "@/components/admin/ScrollToOrder";
 import { formatIsraelDateTime } from "@/lib/datetime";
 import { formatIls } from "@/lib/money";
 import { getOrders, getPickupPoints } from "@/lib/queries";
@@ -37,6 +38,7 @@ export default async function AdminOrdersPage({
 
   return (
     <div className="space-y-6">
+      <ScrollToOrder />
       <h1 className="text-3xl font-bold">הזמנות</h1>
       <form method="get" className="flex flex-wrap items-end gap-3">
         <label className="block space-y-1">
@@ -90,7 +92,7 @@ export default async function AdminOrdersPage({
               </tr>
             ) : (
               filtered.map((order) => (
-                <tr key={order.id} className="border-t border-[var(--line)]">
+                <tr id={`order-${order.id}`} key={order.id} className="border-t border-[var(--line)]">
                   <td className="p-3">{formatIsraelDateTime(order.createdAt)}</td>
                   <td className="p-3">{order.customerName}</td>
                   <td className="p-3">{order.pickupPointName || "-"}</td>
@@ -104,7 +106,10 @@ export default async function AdminOrdersPage({
                     />
                   </td>
                   <td className="p-3">
-                    <Link href={`/admin/orders/${order.id}`} className="text-[var(--teal)]">
+                    <Link
+                      href={pickup ? `/admin/orders/${order.id}?pickup=${encodeURIComponent(pickup)}` : `/admin/orders/${order.id}`}
+                      className="text-[var(--teal)]"
+                    >
                       פירוט
                     </Link>
                   </td>
