@@ -9,6 +9,16 @@ export const HOME_CONTENT_KEYS = [
   "thankyou_body",
 ] as const;
 
+export const SEASON_CONTENT_KEYS = [
+  "orders_open",
+  "closed_title",
+  "closed_intro",
+  "closed_points",
+  "closed_outro",
+  "closed_top_image",
+  "closed_bottom_image",
+] as const;
+
 export const DEFAULT_TERMS_BODY = `ברוכים הבאים לאתר של תמר רפאלי – עיצוב גרפי (להלן: "האתר"). האתר משמש להצגת ולמכירת קישוטים ומוצרים לעיצוב הסוכה ולמוצרים נוספים המוצעים באתר.
 
 השימוש באתר וביצוע רכישה באמצעותו מהווים הסכמה לתנאי תקנון זה.
@@ -151,6 +161,20 @@ export const DEFAULT_CONTENT = {
   thankyou_title: "ההזמנה התקבלה",
   thankyou_body:
     "תודה! ההזמנה נשמרה אצלנו, והקבלה תישלח אליכם במייל. נעדכן אתכם לגבי מועד הגעת המשלוח.",
+  orders_open: "false",
+  closed_title: "לקוחות יקרים!!",
+  closed_intro: `תמו ההזמנות מראש והמשלוחים לשנה זו....
+ניתן להגיע ולרכוש מהמלאי הנמצא בנקודות המכירה שלנו בתיאום מראש:`,
+  closed_points: `כרם רעים | תמר עמר | 054-2307195 | הגלעד 34
+נווה דניאל | אלי רפאלי | 052-9253070 | המוריה 29/4
+בית אל | אלישבע קהתי | 054-6422233 | כ בחשוון, בניין קדמא 24/2
+אשקלון | יעל אסרף | 052-425-0680 | קונדיטון 29, כניסה 2, דירה 1 (דירת גן), עיר היין
+ברוכין | שירה כותה | 054-7203341 | האדרת 46
+כרמית | נעמה מקובסקי | 050-8881074 | חוגלה 5`,
+  closed_outro: `כיף ממש להאיר לכם את הסוכה!
+ניפגש בשנה הבאה (:`,
+  closed_top_image: "/images/season-closed.png",
+  closed_bottom_image: "/images/season-catalog.jpg",
   terms_title: "תקנון ותנאי רכישה",
   terms_body: DEFAULT_TERMS_BODY,
   terms_updated: "09.09.2026",

@@ -1,14 +1,18 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AddToCart } from "@/components/AddToCart";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ProductGallery } from "@/components/ProductGallery";
 import { offeredVariants, variantLabel } from "@/lib/pricing";
 import { getContent, getProductBySlug } from "@/lib/queries";
+import { isOrdersOpen } from "@/lib/store";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [content, product] = await Promise.all([getContent(), getProductBySlug(slug)]);
+  if (!isOrdersOpen(content)) {
+    redirect("/catalog");
+  }
   if (!product) {
     notFound();
   }

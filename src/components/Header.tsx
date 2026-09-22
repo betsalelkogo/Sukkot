@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { ORDERS_OPEN } from "@/lib/store";
+import { getContent } from "@/lib/queries";
+import { isOrdersOpen } from "@/lib/store";
 import { CartLink } from "./CartLink";
 
-export function Header({ logo }: { logo: string }) {
+export async function Header({ logo }: { logo: string }) {
+  const content = await getContent();
+  const ordersOpen = isOrdersOpen(content);
+
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
@@ -14,7 +18,7 @@ export function Header({ logo }: { logo: string }) {
           <Link href="/catalog" className="hover:text-[var(--teal)]">
             קטלוג
           </Link>
-          {ORDERS_OPEN ? <CartLink /> : null}
+          {ordersOpen ? <CartLink /> : null}
         </nav>
       </div>
     </header>

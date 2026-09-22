@@ -100,6 +100,21 @@ export const contentSchema = z
     footer_text: z.string().trim().min(2).max(160),
     thankyou_title: z.string().trim().min(2).max(80),
     thankyou_body: z.string().trim().min(10).max(2000),
+    orders_open: z.enum(["true", "false"]),
+    closed_title: z.string().trim().min(2).max(80),
+    closed_intro: z.string().trim().min(4).max(2000),
+    closed_points: z.string().trim().max(4000),
+    closed_outro: z.string().trim().max(2000),
+    closed_top_image: z
+      .string()
+      .trim()
+      .max(500)
+      .refine((value) => !value || value.startsWith("/") || value.startsWith("https://")),
+    closed_bottom_image: z
+      .string()
+      .trim()
+      .max(500)
+      .refine((value) => !value || value.startsWith("/") || value.startsWith("https://")),
     terms_title: z.string().trim().min(2).max(80),
     terms_body: z.string().trim().min(20).max(40000),
     terms_updated: z.string().trim().min(6).max(20),

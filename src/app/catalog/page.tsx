@@ -3,17 +3,17 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
 import { getContent, getProducts } from "@/lib/queries";
-import { ORDERS_OPEN } from "@/lib/store";
+import { isOrdersOpen } from "@/lib/store";
 
 export default async function CatalogPage() {
   const [content, products] = await Promise.all([getContent(), getProducts({ inStockOnly: true })]);
 
-  if (!ORDERS_OPEN) {
+  if (!isOrdersOpen(content)) {
     return (
       <div className="min-h-screen">
         <Header logo={content.logo_text} />
         <main>
-          <ClosedNotice />
+          <ClosedNotice content={content} />
         </main>
         <Footer text={content.footer_text} />
       </div>

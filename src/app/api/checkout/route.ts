@@ -8,11 +8,13 @@ import { dealDiscountAgorot, priceForVariant, stockForVariant, variantLabel, typ
 import { rateLimit } from "@/lib/rate-limit";
 import { pickupPoints, products } from "@/lib/schema";
 import { releaseStock, reserveStock } from "@/lib/stock";
-import { ORDERS_OPEN } from "@/lib/store";
+import { getContent } from "@/lib/queries";
+import { isOrdersOpen } from "@/lib/store";
 import { checkoutSchema, normalizeLocalPhone } from "@/lib/validations";
 
 export async function POST(request: Request) {
-  if (!ORDERS_OPEN) {
+  const content = await getContent();
+  if (!isOrdersOpen(content)) {
     return NextResponse.json({ error: "ההזמנות לשנה זו הסתיימו." }, { status: 403 });
   }
 

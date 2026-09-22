@@ -1,19 +1,11 @@
 import { jwtVerify } from "jose";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionKey } from "@/lib/session-key";
-import { ORDERS_OPEN, shopPathClosed } from "@/lib/store";
 
 const COOKIE_NAME = "admin_session";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (!ORDERS_OPEN && shopPathClosed(pathname)) {
-    if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "ההזמנות לשנה זו הסתיימו." }, { status: 403 });
-    }
-    return NextResponse.redirect(new URL("/catalog", request.url));
-  }
-
   const isAdminApi = pathname.startsWith("/api/admin");
   const isAdminPage = pathname.startsWith("/admin");
   const isLogin = pathname === "/admin/login" || pathname === "/api/admin/login";
@@ -48,15 +40,5 @@ function deny(request: NextRequest, isAdminApi: boolean) {
 }
 
 export const config = {
-  matcher: [
-    "/admin/:path*",
-    "/api/admin/:path*",
-    "/cart",
-    "/cart/:path*",
-    "/checkout",
-    "/checkout/:path*",
-    "/product/:path*",
-    "/api/checkout",
-    "/api/checkout/:path*",
-  ],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };

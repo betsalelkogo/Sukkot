@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { DEFAULT_CONTENT, SAMPLE_PRODUCTS } from "./defaults";
 import { getDb } from "./db";
@@ -97,7 +98,7 @@ function fromRow(row: typeof products.$inferSelect): ProductRecord {
   };
 }
 
-export async function getContent() {
+export const getContent = cache(async function getContent() {
   const db = getDb();
   if (!db) {
     return DEFAULT_CONTENT;
@@ -114,7 +115,7 @@ export async function getContent() {
   } catch {
     return DEFAULT_CONTENT;
   }
-}
+});
 
 export async function getProducts(options?: { inStockOnly?: boolean }): Promise<ProductRecord[]> {
   const db = getDb();
