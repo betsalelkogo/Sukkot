@@ -17,8 +17,8 @@ export default async function TermsPage() {
           <p className="text-sm text-[var(--muted)]">עודכן לאחרונה: {content.terms_updated}</p>
         </div>
         <TermsDocument body={content.terms_body} />
-        <Link href="/checkout" className="inline-block text-[var(--teal)]">
-          חזרה לתשלום
+        <Link href="/" className="inline-block text-[var(--teal)]">
+          חזרה לאתר
         </Link>
       </main>
       <Footer text={content.footer_text} />

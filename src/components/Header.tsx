@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ORDERS_OPEN } from "@/lib/store";
 import { CartLink } from "./CartLink";
 
 export function Header({ logo }: { logo: string }) {
@@ -13,7 +14,7 @@ export function Header({ logo }: { logo: string }) {
           <Link href="/catalog" className="hover:text-[var(--teal)]">
             קטלוג
           </Link>
-          <CartLink />
+          {ORDERS_OPEN ? <CartLink /> : null}
         </nav>
       </div>
     </header>

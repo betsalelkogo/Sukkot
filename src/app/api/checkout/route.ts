@@ -8,9 +8,14 @@ import { dealDiscountAgorot, priceForVariant, stockForVariant, variantLabel, typ
 import { rateLimit } from "@/lib/rate-limit";
 import { pickupPoints, products } from "@/lib/schema";
 import { releaseStock, reserveStock } from "@/lib/stock";
+import { ORDERS_OPEN } from "@/lib/store";
 import { checkoutSchema, normalizeLocalPhone } from "@/lib/validations";
 
 export async function POST(request: Request) {
+  if (!ORDERS_OPEN) {
+    return NextResponse.json({ error: "ההזמנות לשנה זו הסתיימו." }, { status: 403 });
+  }
+
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (!rateLimit(`checkout:${ip}`, 8, 10 * 60 * 1000).ok) {
     return NextResponse.json({ error: "נסו שוב בעוד כמה דקות." }, { status: 429 });
